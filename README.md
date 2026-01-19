@@ -1,0 +1,1 @@
+# ShipThis Godot Editor Addon
