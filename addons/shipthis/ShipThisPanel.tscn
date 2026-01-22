@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3 uid="uid://di0tjr2md6dqn"]
+
+[ext_resource type="Script" path="res://addons/shipthis/ShipThisPanel.gd" id="1_panel"]
+
+[node name="ShipThisPanel" type="VBoxContainer"]
+script = ExtResource("1_panel")
+
+[node name="EmailContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="EmailContainer"]
+layout_mode = 2
+text = "Enter your email to get started"
+
+[node name="EmailInput" type="LineEdit" parent="EmailContainer"]
+layout_mode = 2
+placeholder_text = "your@email.com"
+
+[node name="SendCodeButton" type="Button" parent="EmailContainer"]
+layout_mode = 2
+text = "Send Code"
+
+[node name="CodeContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+visible = false
+
+[node name="Label" type="Label" parent="CodeContainer"]
+layout_mode = 2
+text = "Check your email for the code"
+
+[node name="CodeInput" type="LineEdit" parent="CodeContainer"]
+layout_mode = 2
+placeholder_text = "Enter code"
+
+[node name="VerifyButton" type="Button" parent="CodeContainer"]
+layout_mode = 2
+text = "Verify"
+
+[node name="BackButton" type="Button" parent="CodeContainer"]
+layout_mode = 2
+text = "Use different email"
+
+[node name="AuthenticatedContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+visible = false
+
+[node name="WelcomeLabel" type="Label" parent="AuthenticatedContainer"]
+layout_mode = 2
+text = "ShipThis - Ready!"
+
+[node name="ActionsContainer" type="HBoxContainer" parent="AuthenticatedContainer"]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="."]
+layout_mode = 2
+visible = false
