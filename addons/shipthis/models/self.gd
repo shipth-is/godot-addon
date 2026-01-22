@@ -2,11 +2,11 @@
 
 const UserDetails = preload("res://addons/shipthis/models/user_details.gd")
 
-var created_at = ""
-var details: UserDetails
-var email = ""
-var id = ""
-var updated_at = ""
+var created_at: String = ""
+var details: UserDetails = null
+var email: String = ""
+var id: String = ""
+var updated_at: String = ""
 
 
 func _init(
@@ -26,7 +26,7 @@ func _init(
 func to_dict() -> Dictionary:
 	return {
 		"createdAt": created_at,
-		"details": details.to_dict(),
+		"details": details.to_dict() if details != null else {},
 		"email": email,
 		"id": id,
 		"updatedAt": updated_at
@@ -41,4 +41,3 @@ static func from_dict(data: Dictionary):
 		data.get("id", ""),
 		data.get("updatedAt", "")
 	)
-

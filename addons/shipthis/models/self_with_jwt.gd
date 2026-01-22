@@ -2,7 +2,7 @@ extends "res://addons/shipthis/models/self.gd"
 
 ## Self model with JWT token
 
-var jwt = ""
+var jwt: String = ""
 
 
 func _init(
@@ -18,7 +18,7 @@ func _init(
 
 
 func to_dict() -> Dictionary:
-	var result = super.to_dict()
+	var result: Dictionary = super.to_dict()
 	result["jwt"] = jwt
 	return result
 
@@ -33,4 +33,3 @@ static func from_dict(data: Dictionary):
 		data.get("updatedAt", ""),
 		data.get("jwt", "")
 	)
-

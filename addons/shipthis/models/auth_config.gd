@@ -2,7 +2,7 @@
 
 const SelfWithJWT = preload("res://addons/shipthis/models/self_with_jwt.gd")
 
-var apple_cookies = {}
+var apple_cookies: Dictionary = {}
 var ship_this_user: SelfWithJWT = null
 
 
@@ -15,7 +15,7 @@ func _init(
 
 
 func to_dict() -> Dictionary:
-	var result = {}
+	var result: Dictionary = {}
 	if apple_cookies.size() > 0:
 		result["appleCookies"] = apple_cookies
 	if ship_this_user != null:
@@ -24,13 +24,12 @@ func to_dict() -> Dictionary:
 
 
 static func from_dict(data: Dictionary):
-	var config = load("res://addons/shipthis/models/auth_config.gd").new()
+	var auth_config = load("res://addons/shipthis/models/auth_config.gd").new()
 	
 	if data.has("appleCookies"):
-		config.apple_cookies = data["appleCookies"]
+		auth_config.apple_cookies = data["appleCookies"]
 	
 	if data.has("shipThisUser"):
-		config.ship_this_user = SelfWithJWT.from_dict(data["shipThisUser"])
+		auth_config.ship_this_user = SelfWithJWT.from_dict(data["shipThisUser"])
 	
-	return config
-
+	return auth_config
