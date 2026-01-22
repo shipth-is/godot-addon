@@ -25,6 +25,35 @@ func get_headers(is_json: bool = false) -> Array[String]:
 	return headers
 
 
+func _parse_error_message(response_code: int, body_data: PackedByteArray) -> String:
+	# Try to parse the response body for error details
+	if body_data == null or body_data.size() == 0:
+		return "HTTP error: %d" % response_code
+	
+	var json_string: String = body_data.get_string_from_utf8()
+	if json_string == "":
+		return "HTTP error: %d" % response_code
+	
+	var json_result = JSON.parse_string(json_string)
+	if json_result == null:
+		return "HTTP error: %d" % response_code
+	
+	# Handle array of validation errors (Zod format)
+	if json_result is Array:
+		var messages: Array[String] = []
+		for item in json_result:
+			if item is Dictionary and item.has("message"):
+				messages.append(item.message)
+		if messages.size() > 0:
+			return " ".join(messages)
+	
+	# Handle object with error field
+	if json_result is Dictionary and json_result.has("error"):
+		return json_result.error
+	
+	return "HTTP error: %d" % response_code
+
+
 func _make_request(method: HTTPClient.Method, path: String, body: Dictionary = {}) -> Dictionary:
 	var http := HTTPRequest.new()
 	var tree := Engine.get_main_loop() as SceneTree
@@ -45,7 +74,7 @@ func _make_request(method: HTTPClient.Method, path: String, body: Dictionary = {
 		return {
 			"is_success": false,
 			"data": {},
-			"error": "Failed to create request: error code %d" % err,
+			"error": "Please check your internet connection.",
 			"code": 0
 		}
 	
@@ -63,7 +92,7 @@ func _make_request(method: HTTPClient.Method, path: String, body: Dictionary = {
 	}
 	
 	if response_code < 200 or response_code >= 300:
-		result.error = "HTTP error: %d" % response_code
+		result.error = _parse_error_message(response_code, body_data)
 		return result
 	
 	if body_data == null or body_data.size() == 0:
