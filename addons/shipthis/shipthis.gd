@@ -32,10 +32,7 @@ func _exit_tree() -> void:
 
 func _initialize_plugin() -> void:
 	config = Config.new()
-	config.load()
-	
-	# Create API instance with config (gets base_url)
-	api = API.new(config)
+	api = API.new()
 	
 	# Initialize panel with config and api
 	panel.initialize(config, api)

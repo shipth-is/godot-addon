@@ -16,6 +16,8 @@ const SelfWithJWT = preload("res://addons/shipthis/models/self_with_jwt.gd")
 
 @onready var authenticated_container: VBoxContainer = $AuthenticatedContainer
 @onready var welcome_label: Label = $AuthenticatedContainer/WelcomeLabel
+@onready var ship_button: Button = $AuthenticatedContainer/ShipButton
+@onready var log_output: RichTextLabel = $AuthenticatedContainer/LogOutput
 
 @onready var status_label: Label = $StatusLabel
 
@@ -31,6 +33,7 @@ func _ready() -> void:
 	send_code_button.pressed.connect(_on_send_code_pressed)
 	verify_button.pressed.connect(_on_verify_pressed)
 	back_button.pressed.connect(_on_back_pressed)
+	ship_button.pressed.connect(_on_ship_pressed)
 
 
 func initialize(new_config, new_api) -> void:
@@ -154,3 +157,12 @@ func _on_verify_pressed() -> void:
 func _on_back_pressed() -> void:
 	code_input.text = ""
 	_show_email_form()
+
+
+func _log(message: String) -> void:
+	log_output.append_text(message + "\n")
+
+
+func _on_ship_pressed() -> void:
+	var ship = load("res://addons/shipthis/ship.gd").new()
+	ship.ship(config, _log)
