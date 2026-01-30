@@ -49,15 +49,8 @@ func find_files(base: String, out := []) -> Array:
 
 
 ## Collect files matching shipped globs, excluding ignored globs
-func collect_files(shipped_globs: PackedStringArray, ignored_globs: PackedStringArray, logger = null) -> Array:
-	if logger:
-		logger.call("Shipped globs: %s" % [Array(shipped_globs)])
-		logger.call("Ignored globs: %s" % [Array(ignored_globs)])
-	
+func collect_files(shipped_globs: PackedStringArray, ignored_globs: PackedStringArray) -> Array:
 	var all_files := find_files("res://")
-	if logger:
-		logger.call("Total files found in res://: %d" % all_files.size())
-	
 	var matched := []
 	
 	# Convert globs to regex patterns
@@ -65,8 +58,6 @@ func collect_files(shipped_globs: PackedStringArray, ignored_globs: PackedString
 	for glob in shipped_globs:
 		var regex := RegEx.new()
 		var regex_str := glob_to_regex(glob)
-		if logger:
-			logger.call("  Glob '%s' -> regex '%s'" % [glob, regex_str])
 		regex.compile(regex_str)
 		shipped_patterns.append(regex)
 	
@@ -74,8 +65,6 @@ func collect_files(shipped_globs: PackedStringArray, ignored_globs: PackedString
 	for glob in ignored_globs:
 		var regex := RegEx.new()
 		var regex_str := glob_to_regex(glob)
-		if logger:
-			logger.call("  Ignore glob '%s' -> regex '%s'" % [glob, regex_str])
 		regex.compile(regex_str)
 		ignored_patterns.append(regex)
 	

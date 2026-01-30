@@ -1,8 +1,13 @@
 @tool
 extends VBoxContainer
 
+const Config = preload("res://addons/shipthis/lib/config.gd")
+const Api = preload("res://addons/shipthis/lib/api.gd")
+const Ship = preload("res://addons/shipthis/lib/ship.gd")
 const AuthConfig = preload("res://addons/shipthis/models/auth_config.gd")
 const SelfWithJWT = preload("res://addons/shipthis/models/self_with_jwt.gd")
+
+enum View { EMAIL, CODE, AUTHENTICATED }
 
 # Node references
 @onready var email_container: VBoxContainer = $EmailContainer
@@ -18,12 +23,13 @@ const SelfWithJWT = preload("res://addons/shipthis/models/self_with_jwt.gd")
 @onready var welcome_label: Label = $AuthenticatedContainer/WelcomeLabel
 @onready var ship_button: Button = $AuthenticatedContainer/ShipButton
 @onready var log_output: RichTextLabel = $AuthenticatedContainer/LogOutput
+@onready var copy_output_button: Button = $AuthenticatedContainer/CopyOutputButton
 
 @onready var status_label: Label = $StatusLabel
 
 # Dependencies
-var config = null
-var api = null
+var config: Config = null
+var api: Api = null
 
 # State
 var current_email: String = ""
@@ -34,40 +40,29 @@ func _ready() -> void:
 	verify_button.pressed.connect(_on_verify_pressed)
 	back_button.pressed.connect(_on_back_pressed)
 	ship_button.pressed.connect(_on_ship_pressed)
+	copy_output_button.pressed.connect(_on_copy_output_pressed)
 
 
-func initialize(new_config, new_api) -> void:
+func initialize(new_config: Config, new_api: Api) -> void:
 	config = new_config
 	api = new_api
 	
-	# Check if already authenticated
-	var auth_config = config.get_auth_config(api)
+	var auth_config := config.get_auth_config(api)
 	
 	if auth_config != null and auth_config.ship_this_user != null:
-		_show_authenticated(auth_config.ship_this_user)
+		_show_view(View.AUTHENTICATED, auth_config.ship_this_user)
 	else:
-		_show_email_form()
+		_show_view(View.EMAIL)
 
 
-func _show_email_form() -> void:
-	email_container.visible = true
-	code_container.visible = false
-	authenticated_container.visible = false
-	_clear_status()
-
-
-func _show_code_form() -> void:
-	email_container.visible = false
-	code_container.visible = true
-	authenticated_container.visible = false
-	_clear_status()
-
-
-func _show_authenticated(user: SelfWithJWT) -> void:
-	email_container.visible = false
-	code_container.visible = false
-	authenticated_container.visible = true
-	welcome_label.text = "Welcome, %s!" % user.email
+func _show_view(view: View, user: SelfWithJWT = null) -> void:
+	email_container.visible = (view == View.EMAIL)
+	code_container.visible = (view == View.CODE)
+	authenticated_container.visible = (view == View.AUTHENTICATED)
+	
+	if view == View.AUTHENTICATED and user != null:
+		welcome_label.text = "Welcome, %s!" % user.email
+	
 	_clear_status()
 
 
@@ -111,7 +106,7 @@ func _on_send_code_pressed() -> void:
 	_set_loading(false)
 	
 	if response.is_success:
-		_show_code_form()
+		_show_view(View.CODE)
 		_set_status("Check your email for the code.")
 	else:
 		_set_status("Failed to send code: %s" % response.error, true)
@@ -149,14 +144,14 @@ func _on_verify_pressed() -> void:
 		# Set token on API for future requests
 		api.set_token(user.jwt)
 		
-		_show_authenticated(user)
+		_show_view(View.AUTHENTICATED, user)
 	else:
 		_set_status("Verification failed: %s" % response.error, true)
 
 
 func _on_back_pressed() -> void:
 	code_input.text = ""
-	_show_email_form()
+	_show_view(View.EMAIL)
 
 
 func _log(message: String) -> void:
@@ -164,5 +159,12 @@ func _log(message: String) -> void:
 
 
 func _on_ship_pressed() -> void:
-	var ship = load("res://addons/shipthis/ship.gd").new()
-	ship.ship(config, _log)
+	log_output.clear()
+	ship_button.disabled = true
+	var ship := Ship.new()
+	await ship.ship(config, api, _log, get_tree())
+	ship_button.disabled = false
+
+
+func _on_copy_output_pressed() -> void:
+	DisplayServer.clipboard_set(log_output.get_parsed_text())

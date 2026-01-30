@@ -21,7 +21,7 @@ func get_auth_config_path() -> String:
 	return home.path_join(".shipthis.auth.json")
 
 
-func set_auth_config(auth_config) -> Error:
+func set_auth_config(auth_config: AuthConfig) -> Error:
 	var json_string: String = JSON.stringify(auth_config.to_dict(), "  ")
 	var file_path: String = get_auth_config_path()
 	var file: FileAccess = FileAccess.open(file_path, FileAccess.WRITE)
@@ -35,7 +35,7 @@ func set_auth_config(auth_config) -> Error:
 	return OK
 
 
-func get_auth_config(api_instance = null):
+func get_auth_config(api_instance = null) -> AuthConfig:
 	var file_path: String = get_auth_config_path()
 	
 	if not FileAccess.file_exists(file_path):
@@ -90,7 +90,7 @@ func get_project_config_path() -> String:
 	return ProjectSettings.globalize_path("res://shipthis.json")
 
 
-func set_project_config(project_config) -> Error:
+func set_project_config(project_config: ProjectConfig) -> Error:
 	var json_string: String = JSON.stringify(project_config.to_dict(), "  ")
 	var file_path: String = get_project_config_path()
 	var file: FileAccess = FileAccess.open(file_path, FileAccess.WRITE)
@@ -104,7 +104,7 @@ func set_project_config(project_config) -> Error:
 	return OK
 
 
-func get_project_config():
+func get_project_config() -> ProjectConfig:
 	var file_path: String = get_project_config_path()
 	
 	if not FileAccess.file_exists(file_path):

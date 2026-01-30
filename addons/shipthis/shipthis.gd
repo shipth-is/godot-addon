@@ -1,13 +1,14 @@
 @tool
 extends EditorPlugin
 
-const Config = preload("res://addons/shipthis/config.gd")
-const API = preload("res://addons/shipthis/api.gd")
+const Config = preload("res://addons/shipthis/lib/config.gd")
+const Api = preload("res://addons/shipthis/lib/api.gd")
+const ShipThisPanel = preload("res://addons/shipthis/ShipThisPanel.gd")
 
-var config = null
-var api = null
+var config: Config = null
+var api: Api = null
 
-var panel: VBoxContainer = null
+var panel: ShipThisPanel = null
 const SHIP_THIS_PANEL = preload("res://addons/shipthis/ShipThisPanel.tscn")
 
 const PANEL_TITLE = "🚀 ShipThis"
@@ -32,7 +33,7 @@ func _exit_tree() -> void:
 
 func _initialize_plugin() -> void:
 	config = Config.new()
-	api = API.new()
+	api = Api.new()
 	
 	# Initialize panel with config and api
 	panel.initialize(config, api)
