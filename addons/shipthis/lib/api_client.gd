@@ -1,11 +1,29 @@
 ## API client for ShipThis backend
 
-var base_url: String = ""
+const PRIMARY_DOMAIN = "shipth.is"
+
+var domain: String = ""
+var api_url: String = ""
+var web_url: String = ""
+var ws_url: String = ""
+
 var token: String = ""
 
 
-func _init(config) -> void:
-	base_url = config.api_url
+func _init() -> void:
+	domain = ProjectSettings.get_setting(
+		"addons/shipthis/domain",
+		PRIMARY_DOMAIN
+	)
+
+	var is_public: bool = domain.contains(PRIMARY_DOMAIN)
+	var api_domain: String = ("api." if is_public else "") + domain
+	var ws_domain: String = ("ws." if is_public else "") + domain
+	
+	api_url =  "https://%s/api/1.0.0" % api_domain
+	web_url =  "https://%s/" % domain
+	ws_url = "wss://%s" % ws_domain
+
 	token = ""
 
 
@@ -13,11 +31,10 @@ func set_token(token_value: String) -> void:
 	token = token_value
 
 
-func get_headers(is_json: bool = false) -> Array[String]:
+func get_headers() -> Array[String]:
 	var headers: Array[String] = []
 	
-	if is_json:
-		headers.append("Content-Type: application/json")
+	headers.append("Content-Type: application/json")
 	
 	if token != "":
 		headers.append("Authorization: Bearer %s" % token)
@@ -59,9 +76,8 @@ func _make_request(method: HTTPClient.Method, path: String, body: Dictionary = {
 	var tree := Engine.get_main_loop() as SceneTree
 	tree.root.add_child(http)
 	
-	var url: String = base_url + path
-	var is_json: bool = body.size() > 0
-	var headers: Array[String] = get_headers(is_json)
+	var url: String = api_url + path
+	var headers: Array[String] = get_headers()
 	var request_body: String = ""
 	
 	if body.size() > 0:

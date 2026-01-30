@@ -1,40 +1,10 @@
 ## Config for ShipThis addon - reads domain from ProjectSettings and generates URLs
 
-const PRIMARY_DOMAIN = "shipth.is"
+
 const AuthConfig = preload("res://addons/shipthis/models/auth_config.gd")
+const ProjectConfig = preload("res://addons/shipthis/models/project_config.gd")
 const UserDetails = preload("res://addons/shipthis/models/user_details.gd")
 const SelfWithJWT = preload("res://addons/shipthis/models/self_with_jwt.gd")
-
-var domain: String = ""
-var api_url: String = ""
-var web_url: String = ""
-var ws_url: String = ""
-var environment: String = ""
-var is_debug: bool = false
-
-
-func get_urls_for_domain(url_domain: String) -> Dictionary:
-	var is_public: bool = url_domain.contains(PRIMARY_DOMAIN)
-	var api_domain: String = ("api." if is_public else "") + url_domain
-	var ws_domain: String = ("ws." if is_public else "") + url_domain
-	
-	return {
-		"api": "https://%s/api/1.0.0" % api_domain,
-		"web": "https://%s/" % url_domain,
-		"ws": "wss://%s" % ws_domain
-	}
-
-
-func load() -> void:
-	domain = ProjectSettings.get_setting(
-		"addons/shipthis/domain",
-		PRIMARY_DOMAIN
-	)
-	
-	var urls: Dictionary = get_urls_for_domain(domain)
-	api_url = urls.api
-	web_url = urls.web
-	ws_url = urls.ws
 
 
 func get_auth_config_path() -> String:
@@ -51,7 +21,7 @@ func get_auth_config_path() -> String:
 	return home.path_join(".shipthis.auth.json")
 
 
-func set_auth_config(auth_config) -> Error:
+func set_auth_config(auth_config: AuthConfig) -> Error:
 	var json_string: String = JSON.stringify(auth_config.to_dict(), "  ")
 	var file_path: String = get_auth_config_path()
 	var file: FileAccess = FileAccess.open(file_path, FileAccess.WRITE)
@@ -65,7 +35,7 @@ func set_auth_config(auth_config) -> Error:
 	return OK
 
 
-func get_auth_config(api_instance = null):
+func get_auth_config(api_instance = null) -> AuthConfig:
 	var file_path: String = get_auth_config_path()
 	
 	if not FileAccess.file_exists(file_path):
@@ -114,3 +84,44 @@ func get_auth_config(api_instance = null):
 			api_instance.set_token(auth_config.ship_this_user.jwt)
 	
 	return auth_config
+
+
+func get_project_config_path() -> String:
+	return ProjectSettings.globalize_path("res://shipthis.json")
+
+
+func set_project_config(project_config: ProjectConfig) -> Error:
+	var json_string: String = JSON.stringify(project_config.to_dict(), "  ")
+	var file_path: String = get_project_config_path()
+	var file: FileAccess = FileAccess.open(file_path, FileAccess.WRITE)
+	
+	if file == null:
+		return FileAccess.get_open_error()
+	
+	file.store_string(json_string)
+	file.close()
+	
+	return OK
+
+
+func get_project_config() -> ProjectConfig:
+	var file_path: String = get_project_config_path()
+	
+	if not FileAccess.file_exists(file_path):
+		return ProjectConfig.new()
+	
+	var file: FileAccess = FileAccess.open(file_path, FileAccess.READ)
+	if file == null:
+		return ProjectConfig.new()
+	
+	var json_string: String = file.get_as_text()
+	file.close()
+	
+	if json_string == "":
+		return ProjectConfig.new()
+	
+	var json_result = JSON.parse_string(json_string)
+	if json_result == null or not json_result is Dictionary:
+		return ProjectConfig.new()
+	
+	return ProjectConfig.from_dict(json_result)
