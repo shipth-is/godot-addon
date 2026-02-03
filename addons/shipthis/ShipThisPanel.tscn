@@ -54,9 +54,14 @@ text = "ShipThis - Ready!"
 [node name="ActionsContainer" type="HBoxContainer" parent="AuthenticatedContainer"]
 layout_mode = 2
 
-[node name="ShipButton" type="Button" parent="AuthenticatedContainer"]
+[node name="ShipButton" type="Button" parent="AuthenticatedContainer/ActionsContainer"]
 layout_mode = 2
 text = "Ship"
+
+[node name="ConnectionStatus" type="Label" parent="AuthenticatedContainer/ActionsContainer"]
+visible = false
+layout_mode = 2
+text = ""
 
 [node name="LogOutput" type="RichTextLabel" parent="AuthenticatedContainer"]
 custom_minimum_size = Vector2(0, 150)
