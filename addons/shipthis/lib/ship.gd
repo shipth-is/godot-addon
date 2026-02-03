@@ -3,9 +3,11 @@
 const Glob = preload("res://addons/shipthis/lib/glob.gd")
 const Zip = preload("res://addons/shipthis/lib/zip.gd")
 const Upload = preload("res://addons/shipthis/lib/upload.gd")
+const Job = preload("res://addons/shipthis/models/job.gd")
 
 
-func ship(config, api, logger: Callable, scene_tree: SceneTree) -> Error:
+## Returns Dictionary with {error: Error, job: Job or null}
+func ship(config, api, logger: Callable, scene_tree: SceneTree) -> Dictionary:
 	var project_config = config.get_project_config()
 	
 	logger.call("Finding files to include...")
@@ -29,7 +31,7 @@ func ship(config, api, logger: Callable, scene_tree: SceneTree) -> Error:
 	
 	if err != OK:
 		logger.call("Failed to create zip: %s" % error_string(err))
-		return err
+		return {"error": err, "job": null}
 	
 	logger.call("Zip created successfully at: %s" % zip_path)
 	
@@ -39,7 +41,7 @@ func ship(config, api, logger: Callable, scene_tree: SceneTree) -> Error:
 	
 	if not ticket_response.is_success:
 		logger.call("Failed to get upload ticket: %s" % ticket_response.error)
-		return ERR_CANT_CONNECT
+		return {"error": ERR_CANT_CONNECT, "job": null}
 	
 	var upload_url: String = ticket_response.data.url
 	
@@ -53,7 +55,7 @@ func ship(config, api, logger: Callable, scene_tree: SceneTree) -> Error:
 	
 	if err != OK:
 		logger.call("Failed to upload: %s" % error_string(err))
-		return err
+		return {"error": err, "job": null}
 	
 	logger.call("Upload complete!")
 	
@@ -63,7 +65,10 @@ func ship(config, api, logger: Callable, scene_tree: SceneTree) -> Error:
 	
 	if not start_response.is_success:
 		logger.call("Failed to start jobs: %s" % start_response.error)
-		return ERR_CANT_CREATE
+		return {"error": ERR_CANT_CREATE, "job": null}
+	
+	# Parse the first job from the response array
+	var job = Job.from_dict(start_response.data[0])
 	
 	logger.call("Jobs started successfully!")
-	return OK
+	return {"error": OK, "job": job}

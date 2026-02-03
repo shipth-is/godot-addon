@@ -4,8 +4,12 @@ extends VBoxContainer
 const Config = preload("res://addons/shipthis/lib/config.gd")
 const Api = preload("res://addons/shipthis/lib/api.gd")
 const Ship = preload("res://addons/shipthis/lib/ship.gd")
+const JobSocket = preload("res://addons/shipthis/lib/job_socket.gd")
 const AuthConfig = preload("res://addons/shipthis/models/auth_config.gd")
 const SelfWithJWT = preload("res://addons/shipthis/models/self_with_jwt.gd")
+const Job = preload("res://addons/shipthis/models/job.gd")
+const JobLogEntry = preload("res://addons/shipthis/models/job_log_entry.gd")
+const AnsiToBBCode = preload("res://addons/shipthis/lib/ansi_to_bbcode.gd")
 
 enum View { EMAIL, CODE, AUTHENTICATED }
 
@@ -21,7 +25,8 @@ enum View { EMAIL, CODE, AUTHENTICATED }
 
 @onready var authenticated_container: VBoxContainer = $AuthenticatedContainer
 @onready var welcome_label: Label = $AuthenticatedContainer/WelcomeLabel
-@onready var ship_button: Button = $AuthenticatedContainer/ShipButton
+@onready var ship_button: Button = $AuthenticatedContainer/ActionsContainer/ShipButton
+@onready var connection_status: Label = $AuthenticatedContainer/ActionsContainer/ConnectionStatus
 @onready var log_output: RichTextLabel = $AuthenticatedContainer/LogOutput
 @onready var copy_output_button: Button = $AuthenticatedContainer/CopyOutputButton
 
@@ -33,6 +38,7 @@ var api: Api = null
 
 # State
 var current_email: String = ""
+var job_socket: JobSocket = null
 
 
 func _ready() -> void:
@@ -62,6 +68,8 @@ func _show_view(view: View, user: SelfWithJWT = null) -> void:
 	
 	if view == View.AUTHENTICATED and user != null:
 		welcome_label.text = "Welcome, %s!" % user.email
+		# Connect WebSocket when entering authenticated view
+		_connect_websocket()
 	
 	_clear_status()
 
@@ -158,12 +166,82 @@ func _log(message: String) -> void:
 	log_output.append_text(message + "\n")
 
 
+func _log_with_color(message: String, color: Color) -> void:
+	log_output.push_color(color)
+	log_output.append_text(message)
+	log_output.pop()
+
+
 func _on_ship_pressed() -> void:
 	log_output.clear()
 	ship_button.disabled = true
+	
 	var ship := Ship.new()
-	await ship.ship(config, api, _log, get_tree())
-	ship_button.disabled = false
+	var result = await ship.ship(config, api, _log, get_tree())
+	
+	if result.error == OK and result.job != null:
+		# Subscribe to job events (WebSocket already connected)
+		var project_config = config.get_project_config()
+		if job_socket != null:
+			job_socket.subscribe_to_job(project_config.project_id, result.job.id)
+	else:
+		ship_button.disabled = false
+
+
+func _connect_websocket() -> void:
+	# Clean up existing socket if any
+	if job_socket != null:
+		job_socket.disconnect_socket()
+		job_socket.queue_free()
+	
+	job_socket = JobSocket.new()
+	add_child(job_socket)
+	
+	# Set up logger for debug output
+	job_socket.set_logger(_log)
+	
+	# Connect signals
+	job_socket.job_updated.connect(_on_job_updated)
+	job_socket.log_received.connect(_on_log_received)
+	job_socket.connection_status_changed.connect(_on_connection_status_changed)
+	
+	# Connect to server (but don't subscribe to any job yet)
+	job_socket.connect_to_server(api.client.ws_url, api.client.token)
+
+
+func _on_job_updated(job) -> void:
+	_log("[JOB] Status changed to: %s" % job.status_name())
+
+
+func _on_log_received(entry) -> void:
+	var color := _get_level_color(entry.level)
+	var prefix := "[%s/%s] " % [entry.stage_name(), entry.level_name()]
+	_log_with_color(prefix, color)
+	var converted_message := AnsiToBBCode.convert(entry.message)
+	log_output.append_text(converted_message + "\n")
+
+
+func _on_connection_status_changed(connected: bool, message: String) -> void:
+	connection_status.visible = true
+	if connected:
+		connection_status.text = "● Connected"
+		connection_status.add_theme_color_override("font_color", Color.GREEN)
+	elif message == "Connecting...":
+		connection_status.text = "● Connecting..."
+		connection_status.add_theme_color_override("font_color", Color.YELLOW)
+	else:
+		connection_status.text = "● Disconnected"
+		connection_status.add_theme_color_override("font_color", Color.RED)
+
+
+func _get_level_color(level: int) -> Color:
+	match level:
+		JobLogEntry.LogLevel.WARN:
+			return Color.YELLOW
+		JobLogEntry.LogLevel.ERROR:
+			return Color.RED
+		_:
+			return Color.WHITE
 
 
 func _on_copy_output_pressed() -> void:

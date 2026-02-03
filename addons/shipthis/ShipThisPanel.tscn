@@ -6,6 +6,11 @@
 font_names = PackedStringArray("monospace")
 
 [node name="ShipThisPanel" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_panel")
 
 [node name="EmailContainer" type="VBoxContainer" parent="."]
@@ -46,6 +51,7 @@ text = "Use different email"
 [node name="AuthenticatedContainer" type="VBoxContainer" parent="."]
 visible = false
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="WelcomeLabel" type="Label" parent="AuthenticatedContainer"]
 layout_mode = 2
@@ -54,15 +60,24 @@ text = "ShipThis - Ready!"
 [node name="ActionsContainer" type="HBoxContainer" parent="AuthenticatedContainer"]
 layout_mode = 2
 
-[node name="ShipButton" type="Button" parent="AuthenticatedContainer"]
+[node name="ShipButton" type="Button" parent="AuthenticatedContainer/ActionsContainer"]
 layout_mode = 2
 text = "Ship"
+
+[node name="ConnectionStatus" type="Label" parent="AuthenticatedContainer/ActionsContainer"]
+visible = false
+layout_mode = 2
+text = ""
 
 [node name="LogOutput" type="RichTextLabel" parent="AuthenticatedContainer"]
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
 theme_override_fonts/normal_font = SubResource("SystemFont_mono")
+theme_override_font_sizes/normal_font_size = 12
 scroll_following = true
+selection_enabled = true
 
 [node name="CopyOutputButton" type="Button" parent="AuthenticatedContainer"]
 layout_mode = 2
