@@ -9,6 +9,7 @@ const AuthConfig = preload("res://addons/shipthis/models/auth_config.gd")
 const SelfWithJWT = preload("res://addons/shipthis/models/self_with_jwt.gd")
 const Job = preload("res://addons/shipthis/models/job.gd")
 const JobLogEntry = preload("res://addons/shipthis/models/job_log_entry.gd")
+const AnsiToBBCode = preload("res://addons/shipthis/lib/ansi_to_bbcode.gd")
 
 enum View { EMAIL, CODE, AUTHENTICATED }
 
@@ -216,7 +217,8 @@ func _on_log_received(entry) -> void:
 	var color := _get_level_color(entry.level)
 	var prefix := "[%s/%s] " % [entry.stage_name(), entry.level_name()]
 	_log_with_color(prefix, color)
-	log_output.append_text(entry.message + "\n")
+	var converted_message := AnsiToBBCode.convert(entry.message)
+	log_output.append_text(converted_message + "\n")
 
 
 func _on_connection_status_changed(connected: bool, message: String) -> void:

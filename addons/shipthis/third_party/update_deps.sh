@@ -30,8 +30,18 @@ fetch_github_addon() {
     echo "  -> $dest_dir"
 }
 
+fix_addon_paths() {
+    local name="$1"
+    local dest_dir="$SCRIPT_DIR/$name"
+    
+    echo "  Fixing resource paths in $name..."
+    find "$dest_dir" -name "*.gd" -exec \
+        sed -i "s|res://addons/$name/|res://addons/shipthis/third_party/$name/|g" {} +
+}
+
 # === DEPENDENCIES ===
 fetch_github_addon "godot-socketio" "msabaeian/godot-socketio" "main" "addons/godot-socketio" "LICENSE README.md"
+fix_addon_paths "godot-socketio"
 # Add more deps here as needed
 
 echo "Done!"
