@@ -10,6 +10,7 @@ const SelfWithJWT = preload("res://addons/shipthis/models/self_with_jwt.gd")
 const Job = preload("res://addons/shipthis/models/job.gd")
 const JobLogEntry = preload("res://addons/shipthis/models/job_log_entry.gd")
 const AnsiToBBCode = preload("res://addons/shipthis/lib/ansi_to_bbcode.gd")
+const AndroidWizardScene = preload("res://addons/shipthis/wizards/android/AndroidWizard.tscn")
 
 enum View { EMAIL, CODE, AUTHENTICATED }
 
@@ -26,10 +27,12 @@ enum View { EMAIL, CODE, AUTHENTICATED }
 @onready var authenticated_container: VBoxContainer = $AuthenticatedContainer
 @onready var welcome_label: Label = $AuthenticatedContainer/WelcomeLabel
 @onready var ship_button: Button = $AuthenticatedContainer/ActionsContainer/ShipButton
+@onready var configure_android_button: Button = $AuthenticatedContainer/ActionsContainer/ConfigureAndroidButton
 @onready var connection_status: Label = $AuthenticatedContainer/ActionsContainer/ConnectionStatus
 @onready var log_output: RichTextLabel = $AuthenticatedContainer/LogOutput
 @onready var copy_output_button: Button = $AuthenticatedContainer/CopyOutputButton
 
+@onready var wizard_container: MarginContainer = $WizardContainer
 @onready var status_label: Label = $StatusLabel
 
 # Dependencies
@@ -39,6 +42,7 @@ var api: Api = null
 # State
 var current_email: String = ""
 var job_socket: JobSocket = null
+var current_wizard: Control = null
 
 
 func _ready() -> void:
@@ -47,6 +51,7 @@ func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
 	ship_button.pressed.connect(_on_ship_pressed)
 	copy_output_button.pressed.connect(_on_copy_output_pressed)
+	configure_android_button.pressed.connect(_on_configure_android_pressed)
 
 
 func initialize(new_config: Config, new_api: Api) -> void:
@@ -65,6 +70,7 @@ func _show_view(view: View, user: SelfWithJWT = null) -> void:
 	email_container.visible = (view == View.EMAIL)
 	code_container.visible = (view == View.CODE)
 	authenticated_container.visible = (view == View.AUTHENTICATED)
+	wizard_container.visible = false
 	
 	if view == View.AUTHENTICATED and user != null:
 		welcome_label.text = "Welcome, %s!" % user.email
@@ -246,3 +252,52 @@ func _get_level_color(level: int) -> Color:
 
 func _on_copy_output_pressed() -> void:
 	DisplayServer.clipboard_set(log_output.get_parsed_text())
+
+
+func _on_configure_android_pressed() -> void:
+	_show_wizard()
+
+
+func _show_wizard() -> void:
+	# Hide main views
+	email_container.visible = false
+	code_container.visible = false
+	authenticated_container.visible = false
+	
+	# Clean up existing wizard if any
+	if current_wizard != null:
+		current_wizard.queue_free()
+		current_wizard = null
+	
+	# Create and show wizard
+	current_wizard = AndroidWizardScene.instantiate()
+	wizard_container.add_child(current_wizard)
+	wizard_container.visible = true
+	
+	# Connect wizard signals
+	current_wizard.wizard_completed.connect(_on_wizard_completed)
+	current_wizard.wizard_cancelled.connect(_on_wizard_cancelled)
+	
+	# Initialize wizard
+	current_wizard.initialize(config, api)
+
+
+func _hide_wizard() -> void:
+	# Clean up wizard
+	if current_wizard != null:
+		current_wizard.queue_free()
+		current_wizard = null
+	
+	wizard_container.visible = false
+	
+	# Show authenticated view
+	authenticated_container.visible = true
+
+
+func _on_wizard_completed() -> void:
+	_hide_wizard()
+	_log("Android configuration completed!")
+
+
+func _on_wizard_cancelled() -> void:
+	_hide_wizard()

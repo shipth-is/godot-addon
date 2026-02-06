@@ -6,6 +6,55 @@ const ProjectConfig = preload("res://addons/shipthis/models/project_config.gd")
 const UserDetails = preload("res://addons/shipthis/models/user_details.gd")
 const SelfWithJWT = preload("res://addons/shipthis/models/self_with_jwt.gd")
 
+# Default globs for new projects
+const DEFAULT_SHIPPED_FILES_GLOBS: Array[String] = ["**/*"]
+
+# Generated from the Godot gitignore https://github.com/github/gitignore/blob/main/Godot.gitignore
+const DEFAULT_IGNORED_FILES_GLOBS: Array[String] = [
+	".git",
+	".gitignore",
+	"shipthis.json",
+	"shipthis-*.zip",
+	".godot/**",
+	".nomedia",
+	".import/**",
+	"export.cfg",
+	"export_credentials.cfg",
+	"*.translation",
+	".mono/**",
+	"data_*/**",
+	"mono_crash.*.json",
+	"*.apk",
+	"*.aab",
+	# OS cruft
+	".DS_Store",
+	"Thumbs.db",
+	# IDE project files
+	"*.iml",
+	".idea/",
+	".vscode/",
+	# Gradle + build outputs
+	".gradle/",
+	"**/build/",
+	# Android local config
+	"local.properties",
+	# Signing (keep secrets out of git)
+	"*.jks",
+	"*.keystore",
+	"keystore.properties",
+	# NDK
+	".cxx/",
+	".externalNativeBuild/",
+	# Misc temp
+	"*.log",
+	"*.tmp",
+	"*.temp",
+	"*.swp",
+	"*.swo",
+	"*~",
+	".env",
+]
+
 
 func get_auth_config_path() -> String:
 	var home: String = ""

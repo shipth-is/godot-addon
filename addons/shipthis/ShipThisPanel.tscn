@@ -64,6 +64,10 @@ layout_mode = 2
 layout_mode = 2
 text = "Ship"
 
+[node name="ConfigureAndroidButton" type="Button" parent="AuthenticatedContainer/ActionsContainer"]
+layout_mode = 2
+text = "Configure Android"
+
 [node name="ConnectionStatus" type="Label" parent="AuthenticatedContainer/ActionsContainer"]
 visible = false
 layout_mode = 2
@@ -82,6 +86,11 @@ selection_enabled = true
 [node name="CopyOutputButton" type="Button" parent="AuthenticatedContainer"]
 layout_mode = 2
 text = "Copy to Clipboard"
+
+[node name="WizardContainer" type="MarginContainer" parent="."]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
 
 [node name="StatusLabel" type="Label" parent="."]
 visible = false
