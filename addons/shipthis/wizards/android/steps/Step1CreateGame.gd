@@ -168,7 +168,7 @@ func _create_new_project(game_name: String, package_name: String) -> void:
 	
 	var details = {
 		"androidPackageName": package_name,
-		"gameEngine": "GODOT",
+		"gameEngine": "godot",
 		"gameEngineVersion": godot_version
 	}
 	
