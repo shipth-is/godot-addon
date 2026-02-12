@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/shipthis/wizards/android/steps/Step3ConnectGoogle.gd" id="1_step"]
+
+[node name="Step3ConnectGoogle" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_step")
+
+[node name="LoadingLabel" type="Label" parent="."]
+visible = false
+layout_mode = 2
+text = "Loading..."
+
+[node name="ContentContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="InstructionsLabel" type="Label" parent="ContentContainer"]
+layout_mode = 2
+text = "Connect your Google account to enable automatic app publishing to Google Play.
+
+Click the button below to open Google authentication in your browser."
+autowrap_mode = 2
+
+[node name="Spacer1" type="Control" parent="ContentContainer"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="ConnectButton" type="Button" parent="ContentContainer"]
+layout_mode = 2
+text = "Connect with Google"
+
+[node name="StatusLabel" type="Label" parent="."]
+visible = false
+layout_mode = 2

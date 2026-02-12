@@ -34,6 +34,7 @@ const STEP_TITLES: Dictionary = {
 const STEP_SCENES: Dictionary = {
 	"createGame": preload("res://addons/shipthis/wizards/android/steps/Step1CreateGame.tscn"),
 	"createKeystore": preload("res://addons/shipthis/wizards/android/steps/Step2Keystore.tscn"),
+	"connectGoogle": preload("res://addons/shipthis/wizards/android/steps/Step3ConnectGoogle.tscn"),
 	# Additional steps will be added here as they are implemented
 }
 

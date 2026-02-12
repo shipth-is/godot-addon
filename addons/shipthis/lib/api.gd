@@ -40,17 +40,17 @@ func get_project_credentials(project_id: String) -> Dictionary:
 
 ## Get Google connection status
 func get_google_status() -> Dictionary:
-	return await client.fetch("/google/status")
+	return await client.fetch("/me/google/status")
 
 
 ## Query builds for a project
 func query_builds(project_id: String, page: int = 0) -> Dictionary:
-	return await client.fetch("/builds?projectId=%s&pageNumber=%d" % [project_id, page])
+	return await client.fetch("/projects/%s/builds?pageNumber=%d" % [project_id, page])
 
 
 ## Test service account key
 func fetch_key_test_result(project_id: String) -> Dictionary:
-	return await client.fetch("/projects/%s/key-test" % project_id)
+	return await client.post("/projects/%s/credentials/android/key/test" % project_id, {})
 
 
 ## Create a new project
@@ -80,4 +80,18 @@ func trigger_credential_import(project_id: String, platform: String, type: Strin
 		"platform": platform,
 		"type": type,
 		"uuid": uuid
+	})
+
+
+## Get Google OAuth URL for connecting service account
+func get_google_auth_url(project_id: String, redirect_uri: String) -> Dictionary:
+	var encoded_uri = redirect_uri.uri_encode()
+	return await client.fetch("/projects/%s/credentials/android/key/connect?redirectUri=%s" % [project_id, encoded_uri])
+
+
+## Get a short login link that requires auth
+func get_login_link(destination: String) -> Dictionary:
+	return await client.post("/me/login-link", {
+		"destination": destination,
+		"webUrl": client.web_url
 	})

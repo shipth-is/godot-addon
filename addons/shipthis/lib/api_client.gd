@@ -29,6 +29,7 @@ func _init() -> void:
 
 func set_token(token_value: String) -> void:
 	token = token_value
+	print("[API] Token set: %s..." % token.substr(0, 20) if token.length() > 20 else "[API] Token set: (empty or short)")
 
 
 func get_headers() -> Array[String]:
@@ -51,9 +52,11 @@ func _parse_error_message(response_code: int, body_data: PackedByteArray) -> Str
 	if json_string == "":
 		return "HTTP error: %d" % response_code
 	
-	var json_result = JSON.parse_string(json_string)
-	if json_result == null:
+	# Use JSON.new() to avoid noisy error logging when response isn't JSON
+	var json = JSON.new()
+	if json.parse(json_string) != OK:
 		return "HTTP error: %d" % response_code
+	var json_result = json.data
 	
 	# Handle array of validation errors (Zod format)
 	if json_result is Array:
@@ -83,6 +86,10 @@ func _make_request(method: HTTPClient.Method, path: String, body: Dictionary = {
 	if body.size() > 0:
 		request_body = JSON.stringify(body)
 	
+	var method_name = ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "TRACE", "CONNECT", "PATCH"][method]
+	print("[API] %s %s" % [method_name, url])
+	print("[API] Token present: %s" % (token != ""))
+	
 	var err := http.request(url, headers, method, request_body)
 	
 	if err != OK:
@@ -100,6 +107,8 @@ func _make_request(method: HTTPClient.Method, path: String, body: Dictionary = {
 	
 	http.queue_free()
 	
+	print("[API] Response: %d" % response_code)
+	
 	var result: Dictionary = {
 		"is_success": false,
 		"data": {},
@@ -108,6 +117,8 @@ func _make_request(method: HTTPClient.Method, path: String, body: Dictionary = {
 	}
 	
 	if response_code < 200 or response_code >= 300:
+		var raw_body = body_data.get_string_from_utf8() if body_data != null else "(null)"
+		print("[API] Error body: %s" % raw_body)
 		result.error = _parse_error_message(response_code, body_data)
 		return result
 	
