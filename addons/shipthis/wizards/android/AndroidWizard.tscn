@@ -30,13 +30,24 @@ layout_mode = 2
 layout_mode = 2
 text = "Step 1 of 7: Create Game"
 
-[node name="HelpText" type="RichTextLabel" parent="."]
-custom_minimum_size = Vector2(0, 80)
-layout_mode = 2
-bbcode_enabled = true
-text = ""
-fit_content = true
-
 [node name="StepContainer" type="MarginContainer" parent="."]
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="SuccessContainer" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 2
+
+[node name="SuccessNotice" type="RichTextLabel" parent="SuccessContainer"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="Spacer" type="Control" parent="SuccessContainer"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="DoneButton" type="Button" parent="SuccessContainer"]
+layout_mode = 2
+text = "Done"

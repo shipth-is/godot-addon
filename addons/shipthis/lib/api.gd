@@ -24,8 +24,9 @@ func get_upload_ticket(project_id: String) -> Dictionary:
 
 
 ## Start jobs for an uploaded file. Returns {is_success, data: Job[]} on success.
-func start_jobs(upload_ticket_id: String) -> Dictionary:
-	return await client.post("/upload/start/%s" % upload_ticket_id, {})
+## Options can include: platform (e.g. "ANDROID"), skipPublish, etc.
+func start_jobs(upload_ticket_id: String, options: Dictionary = {}) -> Dictionary:
+	return await client.post("/upload/start/%s" % upload_ticket_id, options)
 
 
 ## Get project by ID
@@ -46,6 +47,11 @@ func get_google_status() -> Dictionary:
 ## Query builds for a project
 func query_builds(project_id: String, page: int = 0) -> Dictionary:
 	return await client.fetch("/projects/%s/builds?pageNumber=%d" % [project_id, page])
+
+
+## Query jobs for a project
+func query_jobs(project_id: String, page: int = 0) -> Dictionary:
+	return await client.fetch("/projects/%s/jobs?pageNumber=%d" % [project_id, page])
 
 
 ## Test service account key
@@ -94,4 +100,29 @@ func get_login_link(destination: String) -> Dictionary:
 	return await client.post("/me/login-link", {
 		"destination": destination,
 		"webUrl": client.web_url
+	})
+
+
+## Start the service account setup process for Android
+## Returns the initial setup status (status, progress, sub-task flags, etc.)
+func start_service_account_setup(project_id: String) -> Dictionary:
+	return await client.post("/projects/%s/credentials/android/key/setup/" % project_id, {})
+
+
+## Get the current service account setup status (for polling)
+## Returns {status, progress, errorMessage, hasSignedIn, hasProject, ...}
+func get_service_account_setup_status(project_id: String) -> Dictionary:
+	return await client.fetch("/projects/%s/credentials/android/key/status/" % project_id)
+
+
+## Revoke the Google org policy that blocks service account key creation
+## DELETE /me/google/policy - returns updated GoogleStatusResponse
+func revoke_google_org_policy() -> Dictionary:
+	return await client.delete("/me/google/policy")
+
+
+## Invite the service account to a Google Play developer account
+func invite_service_account(project_id: String, developer_id: String) -> Dictionary:
+	return await client.post("/projects/%s/credentials/android/key/invite/" % project_id, {
+		"developerId": developer_id
 	})

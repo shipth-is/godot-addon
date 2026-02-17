@@ -35,15 +35,20 @@ const STEP_SCENES: Dictionary = {
 	"createGame": preload("res://addons/shipthis/wizards/android/steps/Step1CreateGame.tscn"),
 	"createKeystore": preload("res://addons/shipthis/wizards/android/steps/Step2Keystore.tscn"),
 	"connectGoogle": preload("res://addons/shipthis/wizards/android/steps/Step3ConnectGoogle.tscn"),
-	# Additional steps will be added here as they are implemented
+	"createServiceAccount": preload("res://addons/shipthis/wizards/android/steps/Step4ServiceAccount.tscn"),
+	"createInitialBuild": preload("res://addons/shipthis/wizards/android/steps/Step5InitialBuild.tscn"),
+	"createGooglePlayGame": preload("res://addons/shipthis/wizards/android/steps/Step6GooglePlayGame.tscn"),
+	"inviteServiceAccount": preload("res://addons/shipthis/wizards/android/steps/Step7InviteServiceAccount.tscn"),
 }
 
 # Node references
 @onready var title_label: Label = $Header/Title
 @onready var cancel_button: Button = $Header/CancelButton
 @onready var step_indicator: Label = $ProgressContainer/StepIndicator
-@onready var help_text: RichTextLabel = $HelpText
 @onready var step_container: MarginContainer = $StepContainer
+@onready var success_container: VBoxContainer = $SuccessContainer
+@onready var success_notice: RichTextLabel = $SuccessContainer/SuccessNotice
+@onready var done_button: Button = $SuccessContainer/DoneButton
 
 # Dependencies
 var config: Config = null
@@ -58,6 +63,12 @@ var is_loading: bool = false
 
 func _ready() -> void:
 	cancel_button.pressed.connect(_on_cancel_pressed)
+	done_button.pressed.connect(_on_done_pressed)
+	success_notice.meta_clicked.connect(_on_meta_clicked)
+
+
+func _on_meta_clicked(meta: Variant) -> void:
+	OS.shell_open(str(meta))
 
 
 func initialize(new_config: Config, new_api: Api) -> void:
@@ -159,5 +170,28 @@ func _on_cancel_pressed() -> void:
 
 
 func _on_wizard_complete() -> void:
-	help_text.text = "[b]Android configuration complete![/b]\n\nYour game is now configured for Android deployment."
 	_update_progress_indicator()
+	step_container.visible = false
+	cancel_button.visible = false
+
+	var docs_url = api.client.web_url + "docs"
+	var ios_url = api.client.web_url + "docs/ios"
+	var discord_url = "https://discord.gg/HuSvK4GT"
+	var issues_url = "https://github.com/shipth-is/cli/issues"
+
+	var bbcode = "[b]You have successfully configured your game[/b]\n\n" \
+		+ "You are now ready to ship your game to Google Play. " \
+		+ "Use the [b]Ship[/b] button in the ShipThis panel to deploy.\n\n" \
+		+ "[b]Next Steps[/b]\n\n" \
+		+ "- Check out the [url=%s]iOS set up guide[/url]\n" % ios_url \
+		+ "- Review the [url=%s]ShipThis Documentation[/url]\n\n" % docs_url \
+		+ "[b]Need help?[/b]\n\n" \
+		+ "- Join the [url=%s]Discord[/url]\n" % discord_url \
+		+ "- Report an issue on [url=%s]GitHub[/url]" % issues_url
+
+	success_notice.text = bbcode
+	success_container.visible = true
+
+
+func _on_done_pressed() -> void:
+	wizard_completed.emit()

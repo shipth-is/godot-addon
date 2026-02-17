@@ -22,13 +22,16 @@ var _is_watching: bool = false
 # Node references
 @onready var loading_label: Label = $LoadingLabel
 @onready var content_container: VBoxContainer = $ContentContainer
-@onready var instructions_label: Label = $ContentContainer/InstructionsLabel
+@onready var privacy_notice: RichTextLabel = $ContentContainer/PrivacyNotice
 @onready var connect_button: Button = $ContentContainer/ConnectButton
+@onready var url_label: RichTextLabel = $ContentContainer/UrlLabel
 @onready var status_label: Label = $StatusLabel
 
 
 func _ready() -> void:
 	connect_button.pressed.connect(_on_connect_pressed)
+	privacy_notice.meta_clicked.connect(_on_meta_clicked)
+	url_label.meta_clicked.connect(_on_meta_clicked)
 
 
 func _exit_tree() -> void:
@@ -42,8 +45,26 @@ func initialize(api_ref: Api, config_ref: Config) -> void:
 	var project_config = config.get_project_config()
 	project_id = project_config.project_id
 	
+	_populate_privacy_notice()
 	_show_content()
 	_start_watching()
+
+
+func _populate_privacy_notice() -> void:
+	var privacy_url = api.client.web_url + "privacy"
+	var bbcode = "[b]Connect ShipThis with Google[/b]\n\n" \
+		+ "By connecting your Google account, ShipThis will generate a short-lived " \
+		+ "access token for the Google APIs. With this token, ShipThis will be able to:\n\n" \
+		+ "- Set up a Google Cloud project, Service Account, and API Key in your Google account.\n" \
+		+ "- Enable the required APIs for uploading new builds to Google Play.\n" \
+		+ "- Securely store your Service Account API Key in the ShipThis backend for deploying new game builds.\n" \
+		+ "- Invite the Service Account to your Google Play account.\n\n" \
+		+ "To learn more, review our Privacy Policy: [url=%s]%s[/url]" % [privacy_url, privacy_url]
+	privacy_notice.text = bbcode
+
+
+func _on_meta_clicked(meta: Variant) -> void:
+	OS.shell_open(str(meta))
 
 
 func _show_content() -> void:
@@ -118,6 +139,8 @@ func _open_google_auth() -> void:
 	OS.shell_open(final_url)
 	
 	_show_content()
+	url_label.text = "Authentication URL: [url=%s]%s[/url]" % [final_url, final_url]
+	url_label.visible = true
 	_show_status("Waiting for Google authentication...")
 	connect_button.text = "Open Google Auth Again"
 

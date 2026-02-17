@@ -18,12 +18,11 @@ text = "Loading..."
 [node name="ContentContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="InstructionsLabel" type="Label" parent="ContentContainer"]
+[node name="PrivacyNotice" type="RichTextLabel" parent="ContentContainer"]
 layout_mode = 2
-text = "Connect your Google account to enable automatic app publishing to Google Play.
-
-Click the button below to open Google authentication in your browser."
-autowrap_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
 
 [node name="Spacer1" type="Control" parent="ContentContainer"]
 custom_minimum_size = Vector2(0, 16)
@@ -32,6 +31,17 @@ layout_mode = 2
 [node name="ConnectButton" type="Button" parent="ContentContainer"]
 layout_mode = 2
 text = "Connect with Google"
+
+[node name="Spacer2" type="Control" parent="ContentContainer"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+
+[node name="UrlLabel" type="RichTextLabel" parent="ContentContainer"]
+visible = false
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
 
 [node name="StatusLabel" type="Label" parent="."]
 visible = false
