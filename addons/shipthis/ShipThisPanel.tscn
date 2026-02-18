@@ -1,9 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://di0tjr2md6dqn"]
 
 [ext_resource type="Script" uid="uid://nrknymxhny2u" path="res://addons/shipthis/ShipThisPanel.gd" id="1_panel"]
-
-[sub_resource type="SystemFont" id="SystemFont_mono"]
-font_names = PackedStringArray("monospace")
+[ext_resource type="PackedScene" path="res://addons/shipthis/components/LogOutput.tscn" id="2_log_output"]
 
 [node name="ShipThisPanel" type="VBoxContainer"]
 anchors_preset = 15
@@ -64,24 +62,25 @@ layout_mode = 2
 layout_mode = 2
 text = "Ship"
 
+[node name="ConfigureAndroidButton" type="Button" parent="AuthenticatedContainer/ActionsContainer"]
+layout_mode = 2
+text = "Configure Android"
+
 [node name="ConnectionStatus" type="Label" parent="AuthenticatedContainer/ActionsContainer"]
 visible = false
 layout_mode = 2
 text = ""
 
-[node name="LogOutput" type="RichTextLabel" parent="AuthenticatedContainer"]
-custom_minimum_size = Vector2(0, 150)
-layout_mode = 2
-size_flags_vertical = 3
-bbcode_enabled = true
-theme_override_fonts/normal_font = SubResource("SystemFont_mono")
-theme_override_font_sizes/normal_font_size = 12
-scroll_following = true
-selection_enabled = true
+[node name="LogOutput" parent="AuthenticatedContainer" instance=ExtResource("2_log_output")]
 
 [node name="CopyOutputButton" type="Button" parent="AuthenticatedContainer"]
 layout_mode = 2
 text = "Copy to Clipboard"
+
+[node name="WizardContainer" type="MarginContainer" parent="."]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
 
 [node name="StatusLabel" type="Label" parent="."]
 visible = false

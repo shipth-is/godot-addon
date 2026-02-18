@@ -1,0 +1,54 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/shipthis/wizards/android/steps/Step6GooglePlayGame.gd" id="1_step"]
+
+[node name="Step6GooglePlayGame" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_step")
+
+[node name="LoadingLabel" type="Label" parent="."]
+visible = false
+layout_mode = 2
+text = "Checking..."
+
+[node name="ContentContainer" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="ContentContainer"]
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="Spacer1" type="Control" parent="ContentContainer"]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+
+[node name="InstructionsNotice" type="RichTextLabel" parent="ContentContainer"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="Spacer2" type="Control" parent="ContentContainer"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+
+[node name="ButtonsContainer" type="HBoxContainer" parent="ContentContainer"]
+layout_mode = 2
+
+[node name="CheckAgainButton" type="Button" parent="ContentContainer/ButtonsContainer"]
+layout_mode = 2
+text = "Check Again"
+
+[node name="OpenDashboardButton" type="Button" parent="ContentContainer/ButtonsContainer"]
+layout_mode = 2
+text = "Open Dashboard"
+
+[node name="ErrorLabel" type="Label" parent="."]
+visible = false
+layout_mode = 2
+autowrap_mode = 2

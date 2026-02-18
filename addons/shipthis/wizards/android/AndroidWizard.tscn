@@ -1,0 +1,53 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/shipthis/wizards/android/AndroidWizard.gd" id="1_wizard"]
+
+[node name="AndroidWizard" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_wizard")
+
+[node name="Header" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Configure Android"
+theme_override_font_sizes/font_size = 18
+
+[node name="CancelButton" type="Button" parent="Header"]
+layout_mode = 2
+text = "Cancel"
+
+[node name="ProgressContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="StepIndicator" type="Label" parent="ProgressContainer"]
+layout_mode = 2
+text = "Step 1 of 7: Create Game"
+
+[node name="StepContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SuccessContainer" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 2
+
+[node name="SuccessNotice" type="RichTextLabel" parent="SuccessContainer"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="Spacer" type="Control" parent="SuccessContainer"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="DoneButton" type="Button" parent="SuccessContainer"]
+layout_mode = 2
+text = "Done"

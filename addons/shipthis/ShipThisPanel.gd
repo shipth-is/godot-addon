@@ -8,8 +8,8 @@ const JobSocket = preload("res://addons/shipthis/lib/job_socket.gd")
 const AuthConfig = preload("res://addons/shipthis/models/auth_config.gd")
 const SelfWithJWT = preload("res://addons/shipthis/models/self_with_jwt.gd")
 const Job = preload("res://addons/shipthis/models/job.gd")
-const JobLogEntry = preload("res://addons/shipthis/models/job_log_entry.gd")
-const AnsiToBBCode = preload("res://addons/shipthis/lib/ansi_to_bbcode.gd")
+const LogOutputScript = preload("res://addons/shipthis/components/LogOutput.gd")
+const AndroidWizardScene = preload("res://addons/shipthis/wizards/android/AndroidWizard.tscn")
 
 enum View { EMAIL, CODE, AUTHENTICATED }
 
@@ -26,10 +26,12 @@ enum View { EMAIL, CODE, AUTHENTICATED }
 @onready var authenticated_container: VBoxContainer = $AuthenticatedContainer
 @onready var welcome_label: Label = $AuthenticatedContainer/WelcomeLabel
 @onready var ship_button: Button = $AuthenticatedContainer/ActionsContainer/ShipButton
+@onready var configure_android_button: Button = $AuthenticatedContainer/ActionsContainer/ConfigureAndroidButton
 @onready var connection_status: Label = $AuthenticatedContainer/ActionsContainer/ConnectionStatus
-@onready var log_output: RichTextLabel = $AuthenticatedContainer/LogOutput
+@onready var log_output: LogOutputScript = $AuthenticatedContainer/LogOutput
 @onready var copy_output_button: Button = $AuthenticatedContainer/CopyOutputButton
 
+@onready var wizard_container: MarginContainer = $WizardContainer
 @onready var status_label: Label = $StatusLabel
 
 # Dependencies
@@ -39,6 +41,7 @@ var api: Api = null
 # State
 var current_email: String = ""
 var job_socket: JobSocket = null
+var current_wizard: Control = null
 
 
 func _ready() -> void:
@@ -47,6 +50,7 @@ func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
 	ship_button.pressed.connect(_on_ship_pressed)
 	copy_output_button.pressed.connect(_on_copy_output_pressed)
+	configure_android_button.pressed.connect(_on_configure_android_pressed)
 
 
 func initialize(new_config: Config, new_api: Api) -> void:
@@ -65,6 +69,7 @@ func _show_view(view: View, user: SelfWithJWT = null) -> void:
 	email_container.visible = (view == View.EMAIL)
 	code_container.visible = (view == View.CODE)
 	authenticated_container.visible = (view == View.AUTHENTICATED)
+	wizard_container.visible = false
 	
 	if view == View.AUTHENTICATED and user != null:
 		welcome_label.text = "Welcome, %s!" % user.email
@@ -162,22 +167,12 @@ func _on_back_pressed() -> void:
 	_show_view(View.EMAIL)
 
 
-func _log(message: String) -> void:
-	log_output.append_text(message + "\n")
-
-
-func _log_with_color(message: String, color: Color) -> void:
-	log_output.push_color(color)
-	log_output.append_text(message)
-	log_output.pop()
-
-
 func _on_ship_pressed() -> void:
 	log_output.clear()
 	ship_button.disabled = true
 	
 	var ship := Ship.new()
-	var result = await ship.ship(config, api, _log, get_tree())
+	var result = await ship.ship(config, api, log_output.log_message, get_tree())
 	
 	if result.error == OK and result.job != null:
 		# Subscribe to job events (WebSocket already connected)
@@ -198,7 +193,7 @@ func _connect_websocket() -> void:
 	add_child(job_socket)
 	
 	# Set up logger for debug output
-	job_socket.set_logger(_log)
+	job_socket.set_logger(log_output.log_message)
 	
 	# Connect signals
 	job_socket.job_updated.connect(_on_job_updated)
@@ -210,15 +205,11 @@ func _connect_websocket() -> void:
 
 
 func _on_job_updated(job) -> void:
-	_log("[JOB] Status changed to: %s" % job.status_name())
+	log_output.log_message("[JOB] Status changed to: %s" % job.status_name())
 
 
 func _on_log_received(entry) -> void:
-	var color := _get_level_color(entry.level)
-	var prefix := "[%s/%s] " % [entry.stage_name(), entry.level_name()]
-	_log_with_color(prefix, color)
-	var converted_message := AnsiToBBCode.convert(entry.message)
-	log_output.append_text(converted_message + "\n")
+	log_output.log_entry(entry)
 
 
 func _on_connection_status_changed(connected: bool, message: String) -> void:
@@ -234,15 +225,54 @@ func _on_connection_status_changed(connected: bool, message: String) -> void:
 		connection_status.add_theme_color_override("font_color", Color.RED)
 
 
-func _get_level_color(level: int) -> Color:
-	match level:
-		JobLogEntry.LogLevel.WARN:
-			return Color.YELLOW
-		JobLogEntry.LogLevel.ERROR:
-			return Color.RED
-		_:
-			return Color.WHITE
-
-
 func _on_copy_output_pressed() -> void:
-	DisplayServer.clipboard_set(log_output.get_parsed_text())
+	DisplayServer.clipboard_set(log_output.get_log_text())
+
+
+func _on_configure_android_pressed() -> void:
+	_show_wizard()
+
+
+func _show_wizard() -> void:
+	# Hide main views
+	email_container.visible = false
+	code_container.visible = false
+	authenticated_container.visible = false
+	
+	# Clean up existing wizard if any
+	if current_wizard != null:
+		current_wizard.queue_free()
+		current_wizard = null
+	
+	# Create and show wizard
+	current_wizard = AndroidWizardScene.instantiate()
+	wizard_container.add_child(current_wizard)
+	wizard_container.visible = true
+	
+	# Connect wizard signals
+	current_wizard.wizard_completed.connect(_on_wizard_completed)
+	current_wizard.wizard_cancelled.connect(_on_wizard_cancelled)
+	
+	# Initialize wizard
+	current_wizard.initialize(config, api)
+
+
+func _hide_wizard() -> void:
+	# Clean up wizard
+	if current_wizard != null:
+		current_wizard.queue_free()
+		current_wizard = null
+	
+	wizard_container.visible = false
+	
+	# Show authenticated view
+	authenticated_container.visible = true
+
+
+func _on_wizard_completed() -> void:
+	_hide_wizard()
+	log_output.log_message("Android configuration completed!")
+
+
+func _on_wizard_cancelled() -> void:
+	_hide_wizard()

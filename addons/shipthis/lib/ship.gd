@@ -7,7 +7,8 @@ const Job = preload("res://addons/shipthis/models/job.gd")
 
 
 ## Returns Dictionary with {error: Error, job: Job or null}
-func ship(config, api, logger: Callable, scene_tree: SceneTree) -> Dictionary:
+## Options are passed to start_jobs (e.g. {"platform": "ANDROID", "skipPublish": true})
+func ship(config, api, logger: Callable, scene_tree: SceneTree, options: Dictionary = {}) -> Dictionary:
 	var project_config = config.get_project_config()
 	
 	logger.call("Finding files to include...")
@@ -19,6 +20,8 @@ func ship(config, api, logger: Callable, scene_tree: SceneTree) -> Dictionary:
 	)
 	
 	logger.call("Found %d files" % files.size())
+	for f in files:
+		logger.call("  + %s" % f)
 	
 	# Create zip archive
 	var zip_path := "user://shipthis_upload.zip"
@@ -61,7 +64,7 @@ func ship(config, api, logger: Callable, scene_tree: SceneTree) -> Dictionary:
 	
 	# Start build jobs
 	logger.call("Starting build jobs...")
-	var start_response: Dictionary = await api.start_jobs(ticket_response.data.id)
+	var start_response: Dictionary = await api.start_jobs(ticket_response.data.id, options)
 	
 	if not start_response.is_success:
 		logger.call("Failed to start jobs: %s" % start_response.error)
