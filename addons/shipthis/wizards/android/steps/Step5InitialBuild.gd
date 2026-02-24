@@ -9,18 +9,11 @@ signal step_completed
 
 const Config = preload("res://addons/shipthis/lib/config.gd")
 const Api = preload("res://addons/shipthis/lib/api.gd")
-const Ship = preload("res://addons/shipthis/lib/ship.gd")
-const JobSocket = preload("res://addons/shipthis/lib/job_socket.gd")
 const JobModel = preload("res://addons/shipthis/models/job.gd")
-const LogOutputScript = preload("res://addons/shipthis/components/LogOutput.gd")
 
 var api: Api = null
 var config: Config = null
 var project_id: String = ""
-
-# State
-var _job_socket: JobSocket = null
-var _is_shipping: bool = false
 
 # Node references
 @onready var loading_label: Label = $LoadingLabel
@@ -28,12 +21,7 @@ var _is_shipping: bool = false
 @onready var gradle_notice: RichTextLabel = $GradleContainer/GradleNotice
 @onready var enable_gradle_button: Button = $GradleContainer/EnableGradleButton
 @onready var ship_container: VBoxContainer = $ShipContainer
-@onready var ship_status_label: Label = $ShipContainer/ShipStatusLabel
-@onready var progress_container: HBoxContainer = $ShipContainer/ProgressContainer
-@onready var progress_bar: ProgressBar = $ShipContainer/ProgressContainer/ProgressBar
-@onready var progress_label: Label = $ShipContainer/ProgressContainer/ProgressLabel
-@onready var log_output: LogOutputScript = $ShipContainer/LogOutput
-@onready var job_status_label: Label = $ShipContainer/JobStatusLabel
+@onready var ship_runner = $ShipContainer/ShipRunner
 @onready var error_container: VBoxContainer = $ErrorContainer
 @onready var error_label: Label = $ErrorContainer/ErrorLabel
 @onready var retry_button: Button = $ErrorContainer/RetryButton
@@ -45,13 +33,14 @@ func _ready() -> void:
 	gradle_notice.meta_clicked.connect(_on_meta_clicked)
 
 
-func _exit_tree() -> void:
-	_cleanup_job_socket()
-
-
 func initialize(api_ref: Api, config_ref: Config) -> void:
 	api = api_ref
 	config = config_ref
+	ship_runner.initialize(config, api)
+	ship_runner.set_show_ship_button(false)
+	ship_runner.ship_completed.connect(_on_ship_completed)
+	ship_runner.ship_failed.connect(_on_ship_failed)
+	ship_runner.retry_requested.connect(_on_retry_pressed)
 
 	var project_config = config.get_project_config()
 	project_id = project_config.project_id
@@ -87,8 +76,8 @@ func _check_existing_state() -> void:
 			var job_status = job_data.get("status", "")
 			if job_type == "ANDROID" and job_status in ["PENDING", "PROCESSING"]:
 				var job = JobModel.from_dict(job_data)
-				_show_ship_container("Monitoring existing build job...")
-				_start_job_monitoring(job)
+				_show_ship_container()
+				ship_runner.monitor_job(job)
 				return
 
 	# No build and no running job -- check Gradle
@@ -103,7 +92,7 @@ func _check_gradle_build() -> void:
 	if not is_gradle:
 		_show_gradle_prompt()
 	else:
-		await _run_ship()
+		_run_ship()
 
 
 func _is_gradle_build_enabled() -> bool:
@@ -206,81 +195,25 @@ func _on_enable_gradle_pressed() -> void:
 		_show_error("Failed to update export_presets.cfg. Please enable Gradle build manually.")
 		return
 
-	await _run_ship()
+	_run_ship()
 
 
 # --- Ship flow ---
 
 func _run_ship() -> void:
-	if _is_shipping:
-		return
-	_is_shipping = true
-
-	_show_ship_container("Starting build process...")
-
-	var ship_instance = Ship.new()
-	var result = await ship_instance.ship(config, api, _ship_logger, get_tree(), {
+	_show_ship_container()
+	ship_runner.ship({
 		"platform": "ANDROID",
 		"skipPublish": true
 	})
 
-	if result.error != OK:
-		_is_shipping = false
-		if result.job == null:
-			_show_error_inline("Build failed. Please check the log output above and try again.")
-		return
 
-	if result.job != null:
-		ship_status_label.text = "Build submitted! Monitoring job..."
-		_start_job_monitoring(result.job)
-	else:
-		_is_shipping = false
-		_show_error_inline("No job was created. Please check your game configuration.")
+func _on_ship_completed(_job) -> void:
+	await _verify_build_exists()
 
 
-func _ship_logger(message: String) -> void:
-	log_output.log_message(message)
-
-
-# --- Job monitoring ---
-
-func _start_job_monitoring(job) -> void:
-	_cleanup_job_socket()
-
-	_job_socket = JobSocket.new()
-	add_child(_job_socket)
-
-	_job_socket.job_updated.connect(_on_job_updated)
-	_job_socket.log_received.connect(_on_log_received)
-
-	_job_socket.connect_to_server(api.client.ws_url, api.client.token)
-	_job_socket.subscribe_to_job(project_id, job.id)
-
-	# Show job progress
-	progress_container.visible = true
-	job_status_label.visible = true
-	job_status_label.text = "Job status: %s" % job.status_name()
-
-
-func _on_job_updated(job) -> void:
-	job_status_label.text = "Job status: %s" % job.status_name()
-
-	if job.status == JobModel.JobStatus.COMPLETED:
-		_cleanup_job_socket()
-		_is_shipping = false
-		# Verify the build exists
-		await _verify_build_exists()
-	elif job.status == JobModel.JobStatus.FAILED:
-		_cleanup_job_socket()
-		_is_shipping = false
-		_show_error_inline("Build job failed. Check the logs above for details.")
-
-
-func _on_log_received(entry) -> void:
-	log_output.log_entry(entry)
-	if entry.progress >= 0:
-		progress_bar.value = entry.progress
-		progress_label.text = "%d%%" % int(entry.progress)
+func _on_ship_failed(_message: String) -> void:
+	pass  # ShipRunner shows error inline; step-level handling if needed
 
 
 func _verify_build_exists() -> void:
@@ -295,13 +228,6 @@ func _verify_build_exists() -> void:
 
 	# Build completed but AAB not found -- still complete the step
 	step_completed.emit()
-
-
-func _cleanup_job_socket() -> void:
-	if _job_socket != null:
-		_job_socket.disconnect_socket()
-		_job_socket.queue_free()
-		_job_socket = null
 
 
 # --- Retry ---
@@ -326,25 +252,13 @@ func _set_loading(message: String) -> void:
 	loading_label.visible = true
 
 
-func _show_ship_container(status: String) -> void:
+func _show_ship_container() -> void:
 	_hide_all()
 	ship_container.visible = true
-	ship_status_label.text = status
-	log_output.clear()
-	progress_container.visible = false
-	progress_bar.value = 0
-	progress_label.text = "0%"
-	job_status_label.visible = false
 
 
 func _show_error(message: String) -> void:
 	_hide_all()
-	error_container.visible = true
-	error_label.text = message
-	error_label.add_theme_color_override("font_color", Color.RED)
-
-
-func _show_error_inline(message: String) -> void:
 	error_container.visible = true
 	error_label.text = message
 	error_label.add_theme_color_override("font_color", Color.RED)

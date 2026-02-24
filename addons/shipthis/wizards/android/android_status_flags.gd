@@ -67,8 +67,9 @@ static func fetch(api, project_id: String) -> AndroidStatusFlags:
 	if key_test_resp.is_success:
 		var status = key_test_resp.data.get("status", "")
 		var error = key_test_resp.data.get("error", "")
-		flags.has_google_play_game = status == "SUCCESS" or error == "NOT_INVITED"
-		flags.has_invited_service_account = status == "SUCCESS"
+		# API returns lowercase; NOT_INVITED means app exists but service account not invited yet
+		flags.has_google_play_game = (status == "success") or (status == "error" and error == "not_invited")
+		flags.has_invited_service_account = status == "success"
 	
 	return flags
 

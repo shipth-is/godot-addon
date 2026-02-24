@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://di0tjr2md6dqn"]
 
 [ext_resource type="Script" uid="uid://nrknymxhny2u" path="res://addons/shipthis/ShipThisPanel.gd" id="1_panel"]
-[ext_resource type="PackedScene" path="res://addons/shipthis/components/LogOutput.tscn" id="2_log_output"]
+[ext_resource type="PackedScene" path="res://addons/shipthis/components/ShipRunner.tscn" id="2_ship_runner"]
 
 [node name="ShipThisPanel" type="VBoxContainer"]
 anchors_preset = 15
@@ -58,10 +58,6 @@ text = "ShipThis - Ready!"
 [node name="ActionsContainer" type="HBoxContainer" parent="AuthenticatedContainer"]
 layout_mode = 2
 
-[node name="ShipButton" type="Button" parent="AuthenticatedContainer/ActionsContainer"]
-layout_mode = 2
-text = "Ship"
-
 [node name="ConfigureAndroidButton" type="Button" parent="AuthenticatedContainer/ActionsContainer"]
 layout_mode = 2
 text = "Configure Android"
@@ -71,11 +67,9 @@ visible = false
 layout_mode = 2
 text = ""
 
-[node name="LogOutput" parent="AuthenticatedContainer" instance=ExtResource("2_log_output")]
-
-[node name="CopyOutputButton" type="Button" parent="AuthenticatedContainer"]
+[node name="ShipRunner" parent="AuthenticatedContainer" instance=ExtResource("2_ship_runner")]
 layout_mode = 2
-text = "Copy to Clipboard"
+size_flags_vertical = 3
 
 [node name="WizardContainer" type="MarginContainer" parent="."]
 visible = false
