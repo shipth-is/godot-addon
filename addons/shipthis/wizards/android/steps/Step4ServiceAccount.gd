@@ -36,11 +36,16 @@ var _poll_timer: Timer = null
 @onready var progress_label: Label = $ContentContainer/ProgressContainer/ProgressLabel
 @onready var status_table: VBoxContainer = $ContentContainer/StatusTable
 @onready var row_signed_in: RichTextLabel = $ContentContainer/StatusTable/RowSignedIn
-@onready var row_project_created: RichTextLabel = $ContentContainer/StatusTable/RowProjectCreated
-@onready var row_service_account: RichTextLabel = $ContentContainer/StatusTable/RowServiceAccount
-@onready var row_key_created: RichTextLabel = $ContentContainer/StatusTable/RowKeyCreated
-@onready var row_key_uploaded: RichTextLabel = $ContentContainer/StatusTable/RowKeyUploaded
-@onready var row_api_enabled: RichTextLabel = $ContentContainer/StatusTable/RowApiEnabled
+@onready var row_project_created: RichTextLabel = $ContentContainer/StatusTable/RowProjectCreated/Label
+@onready var row_project_created_link: LinkButton = $ContentContainer/StatusTable/RowProjectCreated/Link
+@onready var row_service_account: RichTextLabel = $ContentContainer/StatusTable/RowServiceAccount/Label
+@onready var row_service_account_link: LinkButton = $ContentContainer/StatusTable/RowServiceAccount/Link
+@onready var row_key_created: RichTextLabel = $ContentContainer/StatusTable/RowKeyCreated/Label
+@onready var row_key_created_link: LinkButton = $ContentContainer/StatusTable/RowKeyCreated/Link
+@onready var row_key_uploaded: RichTextLabel = $ContentContainer/StatusTable/RowKeyUploaded/Label
+@onready var row_key_uploaded_link: LinkButton = $ContentContainer/StatusTable/RowKeyUploaded/Link
+@onready var row_api_enabled: RichTextLabel = $ContentContainer/StatusTable/RowApiEnabled/Label
+@onready var row_api_enabled_link: LinkButton = $ContentContainer/StatusTable/RowApiEnabled/Link
 @onready var policy_container: VBoxContainer = $PolicyContainer
 @onready var policy_notice: RichTextLabel = $PolicyContainer/PolicyNotice
 @onready var revoke_button: Button = $PolicyContainer/RevokeButton
@@ -50,11 +55,16 @@ var _poll_timer: Timer = null
 func _ready() -> void:
 	revoke_button.pressed.connect(_on_revoke_pressed)
 	policy_notice.meta_clicked.connect(_on_meta_clicked)
-	row_project_created.meta_clicked.connect(_on_meta_clicked)
-	row_service_account.meta_clicked.connect(_on_meta_clicked)
-	row_key_created.meta_clicked.connect(_on_meta_clicked)
-	row_key_uploaded.meta_clicked.connect(_on_meta_clicked)
-	row_api_enabled.meta_clicked.connect(_on_meta_clicked)
+	row_project_created_link.pressed.connect(_on_view_in_cloud_pressed.bind(row_project_created_link))
+	row_service_account_link.pressed.connect(_on_view_in_cloud_pressed.bind(row_service_account_link))
+	row_key_created_link.pressed.connect(_on_view_in_cloud_pressed.bind(row_key_created_link))
+	row_key_uploaded_link.pressed.connect(_on_view_in_cloud_pressed.bind(row_key_uploaded_link))
+	row_api_enabled_link.pressed.connect(_on_view_in_cloud_pressed.bind(row_api_enabled_link))
+
+
+func _on_view_in_cloud_pressed(link_btn: LinkButton) -> void:
+	if link_btn.uri != "":
+		OS.shell_open(link_btn.uri)
 
 
 func _exit_tree() -> void:
@@ -184,29 +194,29 @@ func _handle_setup_status(data: Dictionary) -> void:
 
 	if data.get("hasProject", false) and gcp_project_id != "" and gcp_project_id != null:
 		var url = "https://console.cloud.google.com/home/dashboard?project=%s" % gcp_project_id
-		_update_status_row(row_project_created, "Project Created", true, url, "View in Google Cloud")
+		_update_status_row(row_project_created, "Project Created", true, url, "View in Google Cloud", row_project_created_link)
 	else:
-		_update_status_row(row_project_created, "Project Created", data.get("hasProject", false))
+		_update_status_row(row_project_created, "Project Created", data.get("hasProject", false), "", "", row_project_created_link)
 
 	if data.get("hasServiceAccount", false) and sa_unique_id != "" and sa_unique_id != null and gcp_project_id != "" and gcp_project_id != null:
 		var url = "https://console.cloud.google.com/iam-admin/serviceaccounts/details/%s?project=%s" % [sa_unique_id, gcp_project_id]
-		_update_status_row(row_service_account, "Service Account Created", true, url, "View in Google Cloud")
+		_update_status_row(row_service_account, "Service Account Created", true, url, "View in Google Cloud", row_service_account_link)
 	else:
-		_update_status_row(row_service_account, "Service Account Created", data.get("hasServiceAccount", false))
+		_update_status_row(row_service_account, "Service Account Created", data.get("hasServiceAccount", false), "", "", row_service_account_link)
 
 	if data.get("hasKey", false) and sa_unique_id != "" and sa_unique_id != null and gcp_project_id != "" and gcp_project_id != null:
 		var url = "https://console.cloud.google.com/iam-admin/serviceaccounts/details/%s/keys?project=%s" % [sa_unique_id, gcp_project_id]
-		_update_status_row(row_key_created, "Key Created", true, url, "View in Google Cloud")
+		_update_status_row(row_key_created, "Key Created", true, url, "View in Google Cloud", row_key_created_link)
 	else:
-		_update_status_row(row_key_created, "Key Created", data.get("hasKey", false))
+		_update_status_row(row_key_created, "Key Created", data.get("hasKey", false), "", "", row_key_created_link)
 
-	_update_status_row(row_key_uploaded, "Key Uploaded", data.get("hasUploadedKey", false))
+	_update_status_row(row_key_uploaded, "Key Uploaded", data.get("hasUploadedKey", false), "", "", row_key_uploaded_link)
 
 	if data.get("hasEnabledApi", false) and gcp_project_id != "" and gcp_project_id != null:
 		var url = "https://console.cloud.google.com/apis/dashboard?project=%s" % gcp_project_id
-		_update_status_row(row_api_enabled, "API Enabled", true, url, "View in Google Cloud")
+		_update_status_row(row_api_enabled, "API Enabled", true, url, "View in Google Cloud", row_api_enabled_link)
 	else:
-		_update_status_row(row_api_enabled, "API Enabled", data.get("hasEnabledApi", false))
+		_update_status_row(row_api_enabled, "API Enabled", data.get("hasEnabledApi", false), "", "", row_api_enabled_link)
 
 	# Check terminal states only after setup was previously running/queued
 	if _prev_status in ["queued", "running"]:
@@ -225,12 +235,16 @@ func _handle_setup_status(data: Dictionary) -> void:
 	_prev_status = status
 
 
-func _update_status_row(row: RichTextLabel, label: String, is_done: bool, link_url: String = "", link_text: String = "") -> void:
+func _update_status_row(row: RichTextLabel, label: String, is_done: bool, link_url: String = "", link_text: String = "", link_button: LinkButton = null) -> void:
 	var icon = "[x]" if is_done else "[ ]"
-	var bbcode = "%s %s" % [icon, label]
-	if is_done and link_url != "":
-		bbcode += "  [url=%s]%s[/url]" % [link_url, link_text]
-	row.text = bbcode
+	row.text = "%s %s" % [icon, label]
+	if link_button != null:
+		if is_done and link_url != "":
+			link_button.visible = true
+			link_button.uri = link_url
+			link_button.text = link_text
+		else:
+			link_button.visible = false
 
 
 # --- WebSocket monitoring ---

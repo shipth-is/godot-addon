@@ -8,6 +8,7 @@
 ##
 ## Thanks Calinou for the original work that made this possible!
 
+const TAB_SPACES := "    "  # 4 spaces for terminal-style table alignment
 
 ## Converts ANSI escape sequences to BBCode with balanced tags.
 ## Tracks open/close state to prevent orphaned closing tags.
@@ -200,5 +201,8 @@ static func convert(p_ansi: String) -> String:
 		result += "[/color]"
 	if bold_open:
 		result += "[/b]"
-	
+
+	# Normalize tabs so ASCII-art tables (e.g. fastlane summary) align in RichTextLabel
+	result = result.replace("\t", TAB_SPACES)
+
 	return result

@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://addons/shipthis/wizards/android/steps/Step5InitialBuild.gd" id="1_step"]
-[ext_resource type="PackedScene" path="res://addons/shipthis/components/LogOutput.tscn" id="2_log_output"]
+[ext_resource type="PackedScene" path="res://addons/shipthis/components/ShipRunner.tscn" id="2_ship_runner"]
 
 [node name="Step5InitialBuild" type="VBoxContainer"]
 anchors_preset = 15
@@ -39,35 +39,9 @@ visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ShipStatusLabel" type="Label" parent="ShipContainer"]
+[node name="ShipRunner" parent="ShipContainer" instance=ExtResource("2_ship_runner")]
 layout_mode = 2
-text = "Preparing build..."
-
-[node name="ProgressContainer" type="HBoxContainer" parent="ShipContainer"]
-visible = false
-layout_mode = 2
-
-[node name="ProgressBar" type="ProgressBar" parent="ShipContainer/ProgressContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-max_value = 100.0
-value = 0.0
-show_percentage = false
-
-[node name="ProgressLabel" type="Label" parent="ShipContainer/ProgressContainer"]
-custom_minimum_size = Vector2(40, 0)
-layout_mode = 2
-text = "0%"
-horizontal_alignment = 2
-
-[node name="LogOutput" parent="ShipContainer" instance=ExtResource("2_log_output")]
-custom_minimum_size = Vector2(0, 200)
 size_flags_vertical = 3
-
-[node name="JobStatusLabel" type="Label" parent="ShipContainer"]
-visible = false
-layout_mode = 2
-text = "Job status: PENDING"
 
 [node name="ErrorContainer" type="VBoxContainer" parent="."]
 visible = false

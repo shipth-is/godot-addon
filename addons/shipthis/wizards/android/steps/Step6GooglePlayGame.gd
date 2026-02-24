@@ -21,7 +21,7 @@ const POLL_INTERVAL_SEC: float = 15.0
 # Node references
 @onready var loading_label: Label = $LoadingLabel
 @onready var content_container: VBoxContainer = $ContentContainer
-@onready var status_label: Label = $ContentContainer/StatusLabel
+@onready var status_label: Label = $ContentContainer/StatusRow/StatusLabel
 @onready var instructions_notice: RichTextLabel = $ContentContainer/InstructionsNotice
 @onready var check_again_button: Button = $ContentContainer/ButtonsContainer/CheckAgainButton
 @onready var open_dashboard_button: Button = $ContentContainer/ButtonsContainer/OpenDashboardButton
@@ -45,6 +45,10 @@ func initialize(api_ref: Api, config_ref: Config) -> void:
 	var project_config = config.get_project_config()
 	project_id = project_config.project_id
 
+	# Show instructions immediately so we never hide content while checking
+	_show_instructions()
+	status_label.text = "Checking if your game exists in Google Play..."
+	_set_checking(true)
 	await _check_app_exists()
 
 
@@ -55,12 +59,15 @@ func _on_meta_clicked(meta: Variant) -> void:
 # --- Key test check ---
 
 func _check_app_exists() -> void:
-	_set_loading("Checking if your game exists in Google Play...")
-	check_again_button.disabled = true
+	# If content not yet visible (e.g. first run), show it with checking state
+	if not content_container.visible:
+		_show_instructions()
+		status_label.text = "Checking if your game exists in Google Play..."
+	_set_checking(true)
 
 	var resp = await api.fetch_key_test_result(project_id)
 
-	check_again_button.disabled = false
+	_set_checking(false)
 
 	if not resp.is_success:
 		_show_instructions()
@@ -70,8 +77,8 @@ func _check_app_exists() -> void:
 	var status = resp.data.get("status", "")
 	var error_code = resp.data.get("error", "")
 
-	# App is found if test succeeds or if the error is just "not invited"
-	var is_app_found = status == "SUCCESS" or error_code == "NOT_INVITED"
+	# App is found if test succeeds or if the error is just "not invited" (API returns lowercase)
+	var is_app_found = (status == "success") or (status == "error" and error_code == "not_invited")
 
 	if is_app_found:
 		_stop_polling()
@@ -147,6 +154,10 @@ func _stop_polling() -> void:
 
 func _on_poll_timeout() -> void:
 	await _check_app_exists()
+
+
+func _set_checking(active: bool) -> void:
+	check_again_button.disabled = active
 
 
 # --- UI helpers ---
