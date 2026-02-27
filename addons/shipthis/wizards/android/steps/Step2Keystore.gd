@@ -8,6 +8,7 @@ signal step_completed
 
 const Config = preload("res://addons/shipthis/lib/config.gd")
 const Api = preload("res://addons/shipthis/lib/api.gd")
+const AddonContext = preload("res://addons/shipthis/lib/addon_context.gd")
 const Upload = preload("res://addons/shipthis/lib/upload.gd")
 
 enum Stage { CHOOSE, CREATE, IMPORT_FORM, IMPORT }
@@ -41,9 +42,9 @@ func _ready() -> void:
 	file_dialog.file_selected.connect(_on_file_selected)
 
 
-func initialize(api_ref: Api, config_ref: Config) -> void:
-	api = api_ref
-	config = config_ref
+func initialize(context: AddonContext) -> void:
+	api = context.api
+	config = context.config
 	_show_stage(Stage.CHOOSE)
 
 

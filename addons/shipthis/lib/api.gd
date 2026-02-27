@@ -39,6 +39,11 @@ func get_project_credentials(project_id: String) -> Dictionary:
 	return await client.fetch("/projects/%s/credentials" % project_id)
 
 
+## Get platform progress (ANDROID or IOS). Returns {is_success, data: {hasBundleSet, hasCredentialsForPlatform, hasApiKeyForPlatform, hasSuccessfulJobForPlatform, platform}}
+func get_project_platform_progress(project_id: String, platform: String) -> Dictionary:
+	return await client.fetch("/projects/%s/%s/progress" % [project_id, platform])
+
+
 ## Get Google connection status
 func get_google_status() -> Dictionary:
 	return await client.fetch("/me/google/status")

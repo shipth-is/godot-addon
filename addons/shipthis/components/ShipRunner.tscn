@@ -1,50 +1,89 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=3 format=3 uid="uid://hslqxu3y7quh"]
 
-[ext_resource type="Script" path="res://addons/shipthis/components/ShipRunner.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://deskkotf757tk" path="res://addons/shipthis/components/ShipRunner.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://addons/shipthis/components/LogOutput.tscn" id="2_log_output"]
 
 [node name="ShipRunner" type="VBoxContainer"]
-layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/separation = 0
 script = ExtResource("1_script")
 
 [node name="ShipButton" type="Button" parent="."]
 layout_mode = 2
 text = "Ship"
 
-[node name="StatusLabel" type="Label" parent="."]
-layout_mode = 2
-text = "Preparing build..."
-
-[node name="ProgressContainer" type="HBoxContainer" parent="."]
-visible = false
+[node name="StatusRow" type="HBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="ProgressBar" type="ProgressBar" parent="ProgressContainer"]
+[node name="StatusLabel" type="Label" parent="StatusRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-max_value = 100.0
-value = 0.0
+text = "Preparing…"
+
+[node name="ViewJobLink" type="LinkButton" parent="StatusRow"]
+layout_mode = 2
+text = "View Job"
+
+[node name="RunningSection" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ProgressContainer" type="HBoxContainer" parent="RunningSection"]
+layout_mode = 2
+alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="RunningSection/ProgressContainer"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
 show_percentage = false
 
-[node name="ProgressLabel" type="Label" parent="ProgressContainer"]
-custom_minimum_size = Vector2(40, 0)
+[node name="ProgressLabel" type="Label" parent="RunningSection/ProgressContainer"]
+custom_minimum_size = Vector2(40, 16)
 layout_mode = 2
 text = "0%"
-horizontal_alignment = 2
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="LogOutput" parent="." instance=ExtResource("2_log_output")]
-custom_minimum_size = Vector2(0, 200)
+[node name="JobStatusRow" type="HBoxContainer" parent="RunningSection"]
+layout_mode = 2
+
+[node name="JobStatusLabel" type="Label" parent="RunningSection/JobStatusRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Job status: PENDING"
+
+[node name="ConnectionStatus" type="Label" parent="RunningSection/JobStatusRow"]
+layout_mode = 2
+
+[node name="LogContainer" type="Control" parent="."]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="JobStatusLabel" type="Label" parent="."]
-visible = false
-layout_mode = 2
-text = "Job status: PENDING"
+[node name="LogOutput" parent="LogContainer" instance=ExtResource("2_log_output")]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 2
+
+[node name="CopyOutputButton" type="Button" parent="LogContainer"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -36.0
+offset_top = 4.0
+offset_right = -12.0
+offset_bottom = 28.0
+grow_horizontal = 0
+tooltip_text = "Copy to clipboard"
 
 [node name="ErrorContainer" type="VBoxContainer" parent="."]
-visible = false
 layout_mode = 2
 
 [node name="ErrorLabel" type="Label" parent="ErrorContainer"]
@@ -58,7 +97,3 @@ layout_mode = 2
 [node name="RetryButton" type="Button" parent="ErrorContainer"]
 layout_mode = 2
 text = "Retry"
-
-[node name="CopyOutputButton" type="Button" parent="."]
-layout_mode = 2
-text = "Copy to Clipboard"

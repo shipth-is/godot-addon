@@ -3,6 +3,7 @@ extends EditorPlugin
 
 const Config = preload("res://addons/shipthis/lib/config.gd")
 const Api = preload("res://addons/shipthis/lib/api.gd")
+const AddonContext = preload("res://addons/shipthis/lib/addon_context.gd")
 const ShipThisPanel = preload("res://addons/shipthis/ShipThisPanel.gd")
 
 var config: Config = null
@@ -34,9 +35,8 @@ func _exit_tree() -> void:
 func _initialize_plugin() -> void:
 	config = Config.new()
 	api = Api.new()
-	
-	# Initialize panel with config and api
-	panel.initialize(config, api)
+	var context = AddonContext.new(config, api, get_editor_interface())
+	panel.initialize(context)
 
 
 func _initialize_panel() -> void:

@@ -9,6 +9,7 @@ signal step_completed
 
 const Config = preload("res://addons/shipthis/lib/config.gd")
 const Api = preload("res://addons/shipthis/lib/api.gd")
+const AddonContext = preload("res://addons/shipthis/lib/addon_context.gd")
 const JobModel = preload("res://addons/shipthis/models/job.gd")
 
 var api: Api = null
@@ -33,10 +34,10 @@ func _ready() -> void:
 	gradle_notice.meta_clicked.connect(_on_meta_clicked)
 
 
-func initialize(api_ref: Api, config_ref: Config) -> void:
-	api = api_ref
-	config = config_ref
-	ship_runner.initialize(config, api)
+func initialize(context: AddonContext) -> void:
+	api = context.api
+	config = context.config
+	ship_runner.initialize(context)
 	ship_runner.set_show_ship_button(false)
 	ship_runner.ship_completed.connect(_on_ship_completed)
 	ship_runner.ship_failed.connect(_on_ship_failed)

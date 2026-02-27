@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://di0tjr2md6dqn"]
+[gd_scene load_steps=4 format=3 uid="uid://di0tjr2md6dqn"]
 
 [ext_resource type="Script" uid="uid://nrknymxhny2u" path="res://addons/shipthis/ShipThisPanel.gd" id="1_panel"]
 [ext_resource type="PackedScene" path="res://addons/shipthis/components/ShipRunner.tscn" id="2_ship_runner"]
+[ext_resource type="PackedScene" uid="uid://c8statusview001" path="res://addons/shipthis/components/StatusView.tscn" id="3_status_view"]
 
 [node name="ShipThisPanel" type="VBoxContainer"]
 anchors_preset = 15
@@ -51,23 +52,22 @@ visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="WelcomeLabel" type="Label" parent="AuthenticatedContainer"]
+[node name="HeaderContainer" type="VBoxContainer" parent="AuthenticatedContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="WelcomeLabel" type="Label" parent="AuthenticatedContainer/HeaderContainer"]
 layout_mode = 2
 text = "ShipThis - Ready!"
 
-[node name="ActionsContainer" type="HBoxContainer" parent="AuthenticatedContainer"]
+[node name="StatusView" parent="AuthenticatedContainer" instance=ExtResource("3_status_view")]
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
-
-[node name="ConfigureAndroidButton" type="Button" parent="AuthenticatedContainer/ActionsContainer"]
-layout_mode = 2
-text = "Configure Android"
-
-[node name="ConnectionStatus" type="Label" parent="AuthenticatedContainer/ActionsContainer"]
-visible = false
-layout_mode = 2
-text = ""
+size_flags_vertical = 3
 
 [node name="ShipRunner" parent="AuthenticatedContainer" instance=ExtResource("2_ship_runner")]
+visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
