@@ -1,0 +1,348 @@
+[gd_scene load_steps=2 format=3 uid="uid://bfyn3e2j2dgb5"]
+
+[ext_resource type="Script" path="res://addons/shipthis/components/StatusView.gd" id="1_script"]
+
+[node name="StatusView" type="ScrollContainer"]
+layout_mode = 2
+script = ExtResource("1_script")
+
+[node name="ContentMargin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="MainColumn" type="VBoxContainer" parent="ContentMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LoadingLabel" type="Label" parent="ContentMargin/MainColumn"]
+visible = false
+layout_mode = 2
+text = "Loading..."
+
+[node name="NoProjectContainer" type="VBoxContainer" parent="ContentMargin/MainColumn"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NoGameLabel" type="Label" parent="ContentMargin/MainColumn/NoProjectContainer"]
+layout_mode = 2
+text = "No game linked"
+
+[node name="ConfigureAndroidButton" type="Button" parent="ContentMargin/MainColumn/NoProjectContainer"]
+layout_mode = 2
+text = "Configure Android"
+
+[node name="HasProjectContainer" type="VBoxContainer" parent="ContentMargin/MainColumn"]
+layout_mode = 2
+
+[node name="ColumnsRow" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="LeftColumn" type="VBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="PlatformColumn" type="VBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="NextStepsColumn" type="VBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="NextStepsSection" type="VBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/NextStepsColumn"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NextStepsHeader" type="RichTextLabel" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/NextStepsColumn/NextStepsSection"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+text = "[b]Next Steps[/b]"
+
+[node name="NextStepsButtons" type="VBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/NextStepsColumn/NextStepsSection"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ConfigureAndroidButton" type="Button" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/NextStepsColumn/NextStepsSection/NextStepsButtons"]
+layout_mode = 2
+text = "Configure Android"
+
+[node name="ShipAndroidButton" type="Button" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/NextStepsColumn/NextStepsSection/NextStepsButtons"]
+layout_mode = 2
+text = "Ship Android"
+
+[node name="ShipIosButton" type="Button" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/NextStepsColumn/NextStepsSection/NextStepsButtons"]
+layout_mode = 2
+text = "Ship iOS"
+
+[node name="ViewBuildsButton" type="LinkButton" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/NextStepsColumn/NextStepsSection/NextStepsButtons"]
+layout_mode = 2
+underline = 0
+tooltip_text = "Opens in browser"
+text = "View builds"
+
+[node name="ViewJobsButton" type="LinkButton" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/NextStepsColumn/NextStepsSection/NextStepsButtons"]
+layout_mode = 2
+underline = 0
+tooltip_text = "Opens in browser"
+text = "View jobs"
+
+[node name="NextStepsHint" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/NextStepsColumn/NextStepsSection"]
+layout_mode = 2
+text = "Run the Android wizard to set up keystore and service account."
+
+[node name="GameDetailsSection" type="VBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="GameDetailsHeader" type="RichTextLabel" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+text = "[b]Game Details[/b]"
+
+[node name="GameDetailsRows" type="VBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="GameIdRow" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/GameIdRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Game ID"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/GameIdRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "—"
+
+[node name="NameRow" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/NameRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Name"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/NameRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "—"
+
+[node name="VersionRow" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/VersionRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Version"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/VersionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "—"
+
+[node name="BuildNumberRow" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/BuildNumberRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Build Number"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/BuildNumberRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "—"
+
+[node name="CreatedAtRow" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/CreatedAtRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Created At"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/CreatedAtRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "—"
+
+[node name="GameEngineRow" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/GameEngineRow"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Game Engine"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/LeftColumn/GameDetailsSection/GameDetailsRows/GameEngineRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "—"
+
+[node name="AndroidStatusSection" type="VBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="AndroidStatusHeader" type="RichTextLabel" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+text = "[b]Android Status[/b]"
+
+[node name="AndroidStatusRows" type="VBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Row1" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows/Row1"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+clip_text = true
+text = "Has Bundle Set"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows/Row1"]
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+text = "—"
+
+[node name="Row2" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows/Row2"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+clip_text = true
+text = "Has Credentials For Platform"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows/Row2"]
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+text = "—"
+
+[node name="Row3" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows/Row3"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+clip_text = true
+text = "Has Api Key For Platform"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows/Row3"]
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+text = "—"
+
+[node name="Row4" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows/Row4"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+clip_text = true
+text = "Has Successful Job For Platform"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/AndroidStatusSection/AndroidStatusRows/Row4"]
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+text = "—"
+
+[node name="IosStatusSection" type="VBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="IosStatusHeader" type="RichTextLabel" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+text = "[b]iOS Status[/b]"
+
+[node name="IosNotEnabledLabel" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection"]
+layout_mode = 2
+text = "The iOS platform is not enabled for this game."
+
+[node name="IosStatusRows" type="VBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Row1" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows/Row1"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+clip_text = true
+text = "Has Bundle Set"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows/Row1"]
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+text = "—"
+
+[node name="Row2" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows/Row2"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+clip_text = true
+text = "Has Credentials For Platform"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows/Row2"]
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+text = "—"
+
+[node name="Row3" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows/Row3"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+clip_text = true
+text = "Has Api Key For Platform"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows/Row3"]
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+text = "—"
+
+[node name="Row4" type="HBoxContainer" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows/Row4"]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+clip_text = true
+text = "Has Successful Job For Platform"
+
+[node name="Value" type="Label" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/PlatformColumn/IosStatusSection/IosStatusRows/Row4"]
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+text = "—"

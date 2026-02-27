@@ -3,7 +3,7 @@ extends VBoxContainer
 
 const Config = preload("res://addons/shipthis/lib/config.gd")
 const Api = preload("res://addons/shipthis/lib/api.gd")
-const JobSocket = preload("res://addons/shipthis/lib/job_socket.gd")
+const AddonContext = preload("res://addons/shipthis/lib/addon_context.gd")
 const AuthConfig = preload("res://addons/shipthis/models/auth_config.gd")
 const SelfWithJWT = preload("res://addons/shipthis/models/self_with_jwt.gd")
 const AndroidWizardScene = preload("res://addons/shipthis/wizards/android/AndroidWizard.tscn")
@@ -21,9 +21,9 @@ enum View { EMAIL, CODE, AUTHENTICATED }
 @onready var back_button: Button = $CodeContainer/BackButton
 
 @onready var authenticated_container: VBoxContainer = $AuthenticatedContainer
-@onready var welcome_label: Label = $AuthenticatedContainer/WelcomeLabel
-@onready var configure_android_button: Button = $AuthenticatedContainer/ActionsContainer/ConfigureAndroidButton
-@onready var connection_status: Label = $AuthenticatedContainer/ActionsContainer/ConnectionStatus
+@onready var header_container: VBoxContainer = $AuthenticatedContainer/HeaderContainer
+@onready var welcome_label: Label = $AuthenticatedContainer/HeaderContainer/WelcomeLabel
+@onready var status_view = $AuthenticatedContainer/StatusView
 @onready var ship_runner = $AuthenticatedContainer/ShipRunner
 
 @onready var wizard_container: MarginContainer = $WizardContainer
@@ -32,10 +32,10 @@ enum View { EMAIL, CODE, AUTHENTICATED }
 # Dependencies
 var config: Config = null
 var api: Api = null
+var _context: AddonContext = null
 
 # State
 var current_email: String = ""
-var job_socket: JobSocket = null
 var current_wizard: Control = null
 
 
@@ -43,18 +43,20 @@ func _ready() -> void:
 	send_code_button.pressed.connect(_on_send_code_pressed)
 	verify_button.pressed.connect(_on_verify_pressed)
 	back_button.pressed.connect(_on_back_pressed)
-	configure_android_button.pressed.connect(_on_configure_android_pressed)
 	ship_runner.ship_completed.connect(_on_ship_completed)
 	ship_runner.ship_failed.connect(_on_ship_failed)
 
 
-func initialize(new_config: Config, new_api: Api) -> void:
-	config = new_config
-	api = new_api
-	ship_runner.initialize(config, api)
-	ship_runner.set_show_ship_button(true)
-
+func initialize(context: AddonContext) -> void:
+	_context = context
+	config = context.config
+	api = context.api
 	var auth_config := config.get_auth_config(api)
+	ship_runner.initialize(context)
+	ship_runner.set_show_ship_button(false)
+	status_view.initialize(context)
+	status_view.configure_android_pressed.connect(_on_configure_android_pressed)
+	status_view.ship_pressed.connect(_on_status_view_ship_pressed)
 
 	if auth_config != null and auth_config.ship_this_user != null:
 		_show_view(View.AUTHENTICATED, auth_config.ship_this_user)
@@ -70,8 +72,7 @@ func _show_view(view: View, user: SelfWithJWT = null) -> void:
 	
 	if view == View.AUTHENTICATED and user != null:
 		welcome_label.text = "Welcome, %s!" % user.email
-		# Connect WebSocket when entering authenticated view
-		_connect_websocket()
+		status_view.refresh()
 	
 	_clear_status()
 
@@ -88,6 +89,18 @@ func _set_status(message: String, is_error: bool = false) -> void:
 func _clear_status() -> void:
 	status_label.text = ""
 	status_label.visible = false
+
+
+func _show_toast_or_status(message: String, is_error: bool) -> void:
+	var toaster: Object = null
+	if _context != null and _context.editor_interface != null and _context.editor_interface.has_method("get_editor_toaster"):
+		toaster = _context.editor_interface.get_editor_toaster()
+	if toaster != null and toaster.has_method("push_toast"):
+		var severity := 2 if is_error else 0  # SEVERITY_ERROR = 2, SEVERITY_INFO = 0
+		toaster.push_toast(message, severity, "")
+		_clear_status()
+	else:
+		_set_status(message, is_error)
 
 
 func _set_loading(is_loading: bool) -> void:
@@ -165,40 +178,17 @@ func _on_back_pressed() -> void:
 
 
 func _on_ship_completed(_job) -> void:
-	_set_status("Build completed successfully.")
+	ship_runner.visible = false
+	status_view.visible = true
+	header_container.visible = true
+	_show_toast_or_status("Build completed successfully.", false)
 
 
 func _on_ship_failed(_message: String) -> void:
-	_set_status("Build failed.", true)
-
-
-func _connect_websocket() -> void:
-	# Clean up existing socket if any
-	if job_socket != null:
-		job_socket.disconnect_socket()
-		job_socket.queue_free()
-
-	job_socket = JobSocket.new()
-	add_child(job_socket)
-
-	# Connect signal for connection status indicator only (ShipRunner uses its own socket when shipping)
-	job_socket.connection_status_changed.connect(_on_connection_status_changed)
-
-	# Connect to server (but don't subscribe to any job yet)
-	job_socket.connect_to_server(api.client.ws_url, api.client.token)
-
-
-func _on_connection_status_changed(connected: bool, message: String) -> void:
-	connection_status.visible = true
-	if connected:
-		connection_status.text = "● Connected"
-		connection_status.add_theme_color_override("font_color", Color.GREEN)
-	elif message == "Connecting...":
-		connection_status.text = "● Connecting..."
-		connection_status.add_theme_color_override("font_color", Color.YELLOW)
-	else:
-		connection_status.text = "● Disconnected"
-		connection_status.add_theme_color_override("font_color", Color.RED)
+	ship_runner.visible = false
+	status_view.visible = true
+	header_container.visible = true
+	_show_toast_or_status("Build failed.", true)
 
 
 func _on_configure_android_pressed() -> void:
@@ -228,7 +218,7 @@ func _show_wizard() -> void:
 	current_wizard.wizard_cancelled.connect(_on_wizard_cancelled)
 	
 	# Initialize wizard
-	current_wizard.initialize(config, api)
+	current_wizard.initialize(_context)
 
 
 func _hide_wizard() -> void:
@@ -243,10 +233,19 @@ func _hide_wizard() -> void:
 	authenticated_container.visible = true
 
 
+func _on_status_view_ship_pressed(platform: String) -> void:
+	header_container.visible = false
+	status_view.visible = false
+	ship_runner.visible = true
+	ship_runner.ship({ "platform": platform })
+
+
 func _on_wizard_completed() -> void:
 	_hide_wizard()
-	_set_status("Android configuration completed!")
+	status_view.refresh()
+	_show_toast_or_status("Android configuration completed!", false)
 
 
 func _on_wizard_cancelled() -> void:
 	_hide_wizard()
+	status_view.refresh()

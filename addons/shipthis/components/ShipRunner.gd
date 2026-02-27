@@ -10,6 +10,7 @@ signal retry_requested
 
 const Config = preload("res://addons/shipthis/lib/config.gd")
 const Api = preload("res://addons/shipthis/lib/api.gd")
+const AddonContext = preload("res://addons/shipthis/lib/addon_context.gd")
 const Ship = preload("res://addons/shipthis/lib/ship.gd")
 const JobSocket = preload("res://addons/shipthis/lib/job_socket.gd")
 const JobModel = preload("res://addons/shipthis/models/job.gd")
@@ -22,17 +23,22 @@ var _job_socket: JobSocket = null
 var _is_shipping: bool = false
 
 # Node references (set in _ready or by parent when scene is instanced)
-@onready var status_label: Label = $StatusLabel
+@onready var status_label: Label = $StatusRow/StatusLabel
+@onready var view_job_link: LinkButton = $StatusRow/ViewJobLink
 @onready var ship_button: Button = $ShipButton
-@onready var progress_container: HBoxContainer = $ProgressContainer
-@onready var progress_bar: ProgressBar = $ProgressContainer/ProgressBar
-@onready var progress_label: Label = $ProgressContainer/ProgressLabel
-@onready var log_output: LogOutputScript = $LogOutput
-@onready var job_status_label: Label = $JobStatusLabel
+@onready var progress_container: HBoxContainer = $RunningSection/ProgressContainer
+@onready var progress_bar: ProgressBar = $RunningSection/ProgressContainer/ProgressBar
+@onready var progress_label: Label = $RunningSection/ProgressContainer/ProgressLabel
+@onready var job_status_row: HBoxContainer = $RunningSection/JobStatusRow
+@onready var job_status_label: Label = $RunningSection/JobStatusRow/JobStatusLabel
+@onready var connection_status_label: Label = $RunningSection/JobStatusRow/ConnectionStatus
+@onready var log_output: LogOutputScript = $LogContainer/LogOutput
+@onready var copy_output_button: Button = $LogContainer/CopyOutputButton
 @onready var error_container: VBoxContainer = $ErrorContainer
 @onready var error_label: Label = $ErrorContainer/ErrorLabel
 @onready var retry_button: Button = $ErrorContainer/RetryButton
-@onready var copy_output_button: Button = $CopyOutputButton
+
+var _current_job_id: String = ""
 
 
 func _ready() -> void:
@@ -42,15 +48,22 @@ func _ready() -> void:
 		retry_button.pressed.connect(_on_retry_pressed)
 	if copy_output_button != null:
 		copy_output_button.pressed.connect(_on_copy_output_pressed)
+	if view_job_link != null:
+		view_job_link.pressed.connect(_on_view_job_pressed)
 
 
 func _exit_tree() -> void:
 	_cleanup_job_socket()
 
 
-func initialize(config_ref: Config, api_ref: Api) -> void:
-	config = config_ref
-	api = api_ref
+func initialize(context: AddonContext) -> void:
+	config = context.config
+	api = context.api
+	var editor_theme: Theme = context.get_editor_theme()
+	if copy_output_button != null and editor_theme != null:
+		copy_output_button.theme = editor_theme
+		copy_output_button.icon = editor_theme.get_icon("ActionCopy", "EditorIcons")
+		copy_output_button.text = ""
 
 
 func set_show_ship_button(show_button: bool) -> void:
@@ -66,7 +79,7 @@ func ship(options: Dictionary = {}) -> void:
 
 	_clear_ui()
 	error_container.visible = false
-	status_label.text = "Preparing build..."
+	status_label.text = "Preparing…"
 	status_label.visible = true
 	if ship_button != null:
 		ship_button.disabled = true
@@ -84,7 +97,6 @@ func ship(options: Dictionary = {}) -> void:
 		return
 
 	if result.job != null:
-		status_label.text = "Build submitted! Monitoring job..."
 		_start_job_monitoring(result.job)
 	else:
 		_is_shipping = false
@@ -107,7 +119,6 @@ func monitor_job(job) -> void:
 	_is_shipping = true
 	_clear_ui()
 	error_container.visible = false
-	status_label.text = "Monitoring existing build job..."
 	status_label.visible = true
 	if ship_button != null:
 		ship_button.disabled = true
@@ -122,23 +133,35 @@ func _ship_logger(message: String) -> void:
 func _start_job_monitoring(job) -> void:
 	_cleanup_job_socket()
 
+	_current_job_id = job.id
+	var project_config = config.get_project_config()
+	var short_id: String = project_config.project_id.substr(0, 8) if project_config.project_id.length() >= 8 else project_config.project_id
+	status_label.text = "Job %s is in progress." % short_id
+	if job_status_label != null:
+		job_status_label.text = "Job status: %s" % job.status_name()
+	if view_job_link != null:
+		view_job_link.visible = true
+		view_job_link.uri = _job_url_for(short_id)
+
 	_job_socket = JobSocket.new()
 	add_child(_job_socket)
 
 	_job_socket.job_updated.connect(_on_job_updated)
 	_job_socket.log_received.connect(_on_log_received)
+	_job_socket.connection_status_changed.connect(_on_connection_status_changed)
 
-	var project_config = config.get_project_config()
 	_job_socket.connect_to_server(api.client.ws_url, api.client.token)
 	_job_socket.subscribe_to_job(project_config.project_id, job.id)
 
-	progress_container.visible = true
-	job_status_label.visible = true
-	job_status_label.text = "Job status: %s" % job.status_name()
+	if progress_container != null:
+		progress_container.visible = true
+	if job_status_row != null:
+		job_status_row.visible = true
 
 
 func _on_job_updated(job) -> void:
-	job_status_label.text = "Job status: %s" % job.status_name()
+	if job_status_label != null:
+		job_status_label.text = "Job status: %s" % job.status_name()
 
 	if job.status == JobModel.JobStatus.COMPLETED:
 		_cleanup_job_socket()
@@ -168,6 +191,26 @@ func _cleanup_job_socket() -> void:
 		_job_socket.disconnect_socket()
 		_job_socket.queue_free()
 		_job_socket = null
+	_current_job_id = ""
+	if connection_status_label != null:
+		connection_status_label.visible = false
+	if view_job_link != null:
+		view_job_link.visible = false
+
+
+func _on_connection_status_changed(connected: bool, message: String) -> void:
+	if connection_status_label == null:
+		return
+	connection_status_label.visible = true
+	if connected:
+		connection_status_label.text = "● Connected"
+		connection_status_label.add_theme_color_override("font_color", Color.GREEN)
+	elif message == "Connecting...":
+		connection_status_label.text = "● Connecting..."
+		connection_status_label.add_theme_color_override("font_color", Color.YELLOW)
+	else:
+		connection_status_label.text = "● Disconnected"
+		connection_status_label.add_theme_color_override("font_color", Color.RED)
 
 
 func _on_retry_pressed() -> void:
@@ -182,14 +225,39 @@ func _on_copy_output_pressed() -> void:
 	DisplayServer.clipboard_set(get_log_text())
 
 
+func _on_view_job_pressed() -> void:
+	if api == null:
+		return
+	var project_config = config.get_project_config()
+	var short_id: String = project_config.project_id.substr(0, 8) if project_config.project_id.length() >= 8 else project_config.project_id
+	var destination := "/games/%s/jobs" % short_id
+	var resp = await api.get_login_link(destination)
+	if resp.is_success and resp.data.has("url"):
+		OS.shell_open(resp.data.url)
+	else:
+		OS.shell_open(api.client.web_url + destination.trim_prefix("/"))
+
+
+func _job_url_for(short_id: String) -> String:
+	if api == null:
+		return ""
+	return api.client.web_url + "games/" + short_id + "/jobs"
+
+
 func _clear_ui() -> void:
 	status_label.visible = true
-	progress_container.visible = false
+	if connection_status_label != null:
+		connection_status_label.visible = false
+	if progress_container != null:
+		progress_container.visible = false
 	if progress_bar != null:
 		progress_bar.value = 0
 	if progress_label != null:
 		progress_label.text = "0%"
-	job_status_label.visible = false
+	if job_status_row != null:
+		job_status_row.visible = false
+	if view_job_link != null:
+		view_job_link.visible = false
 	if log_output != null:
 		log_output.clear()
 

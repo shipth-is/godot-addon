@@ -9,6 +9,7 @@ signal step_completed
 
 const Config = preload("res://addons/shipthis/lib/config.gd")
 const Api = preload("res://addons/shipthis/lib/api.gd")
+const AddonContext = preload("res://addons/shipthis/lib/addon_context.gd")
 
 var api: Api = null
 var config: Config = null
@@ -38,9 +39,9 @@ func _exit_tree() -> void:
 	_stop_polling()
 
 
-func initialize(api_ref: Api, config_ref: Config) -> void:
-	api = api_ref
-	config = config_ref
+func initialize(context: AddonContext) -> void:
+	api = context.api
+	config = context.config
 
 	var project_config = config.get_project_config()
 	project_id = project_config.project_id

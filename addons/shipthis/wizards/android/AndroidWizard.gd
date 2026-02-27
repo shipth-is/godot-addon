@@ -5,6 +5,7 @@ extends VBoxContainer
 
 const Config = preload("res://addons/shipthis/lib/config.gd")
 const Api = preload("res://addons/shipthis/lib/api.gd")
+const AddonContext = preload("res://addons/shipthis/lib/addon_context.gd")
 const AndroidEnums = preload("res://addons/shipthis/wizards/android/android_enums.gd")
 const AndroidStatusFlags = preload("res://addons/shipthis/wizards/android/android_status_flags.gd")
 
@@ -53,6 +54,7 @@ const STEP_SCENES: Dictionary = {
 # Dependencies
 var config: Config = null
 var api: Api = null
+var _context: AddonContext = null
 
 # State
 var status_flags: AndroidStatusFlags = null
@@ -71,9 +73,10 @@ func _on_meta_clicked(meta: Variant) -> void:
 	OS.shell_open(str(meta))
 
 
-func initialize(new_config: Config, new_api: Api) -> void:
-	config = new_config
-	api = new_api
+func initialize(context: AddonContext) -> void:
+	_context = context
+	config = context.config
+	api = context.api
 	
 	# Start loading status
 	await _refresh_status()
@@ -142,7 +145,7 @@ func _load_current_step() -> void:
 	
 	# Initialize the step
 	if current_step_node.has_method("initialize"):
-		current_step_node.initialize(api, config)
+		current_step_node.initialize(_context)
 
 
 func _update_progress_indicator() -> void:
