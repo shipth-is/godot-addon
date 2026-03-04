@@ -8,6 +8,7 @@ script = ExtResource("1_script")
 
 [node name="ContentMargin" type="MarginContainer" parent="."]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
@@ -25,15 +26,23 @@ text = "Loading..."
 [node name="NoProjectContainer" type="VBoxContainer" parent="ContentMargin/MainColumn"]
 visible = false
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
 [node name="NoGameLabel" type="Label" parent="ContentMargin/MainColumn/NoProjectContainer"]
 layout_mode = 2
-text = "No game linked"
+text = "No game configured"
+
+[node name="ValuePropLabel" type="Label" parent="ContentMargin/MainColumn/NoProjectContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+size_flags_horizontal = 3
+autowrap_mode = 3
+text = "Run the Android wizard to configure this project with ShipThis and ship builds to Google Play and the App Store."
 
 [node name="ConfigureAndroidButton" type="Button" parent="ContentMargin/MainColumn/NoProjectContainer"]
 layout_mode = 2
-text = "Configure Android"
+text = "Run the Android wizard"
 
 [node name="HasProjectContainer" type="VBoxContainer" parent="ContentMargin/MainColumn"]
 layout_mode = 2
@@ -74,7 +83,7 @@ theme_override_constants/separation = 6
 
 [node name="ConfigureAndroidButton" type="Button" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/NextStepsColumn/NextStepsSection/NextStepsButtons"]
 layout_mode = 2
-text = "Configure Android"
+text = "Run the Android wizard"
 
 [node name="ShipAndroidButton" type="Button" parent="ContentMargin/MainColumn/HasProjectContainer/ColumnsRow/NextStepsColumn/NextStepsSection/NextStepsButtons"]
 layout_mode = 2

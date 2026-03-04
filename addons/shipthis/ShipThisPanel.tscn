@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://di0tjr2md6dqn"]
+[gd_scene load_steps=5 format=3 uid="uid://di0tjr2md6dqn"]
 
 [ext_resource type="Script" uid="uid://nrknymxhny2u" path="res://addons/shipthis/ShipThisPanel.gd" id="1_panel"]
 [ext_resource type="PackedScene" path="res://addons/shipthis/components/ShipRunner.tscn" id="2_ship_runner"]
 [ext_resource type="PackedScene" uid="uid://c8statusview001" path="res://addons/shipthis/components/StatusView.tscn" id="3_status_view"]
+[ext_resource type="PackedScene" uid="uid://submitlineedit001" path="res://addons/shipthis/components/SubmitLineEdit.tscn" id="4_submit_line_edit"]
 
 [node name="ShipThisPanel" type="VBoxContainer"]
 anchors_preset = 15
@@ -14,52 +15,130 @@ script = ExtResource("1_panel")
 
 [node name="EmailContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
+theme_override_constants/separation = 8
 
-[node name="Label" type="Label" parent="EmailContainer"]
+[node name="HeadingLabel" type="Label" parent="EmailContainer"]
 layout_mode = 2
-text = "Enter your email to get started"
+text = "Enter your email"
 
-[node name="EmailInput" type="LineEdit" parent="EmailContainer"]
+[node name="EmailInput" parent="EmailContainer" instance=ExtResource("4_submit_line_edit")]
 layout_mode = 2
 placeholder_text = "your@email.com"
 
+[node name="SubtextLabel" type="Label" parent="EmailContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "We will email you a one-time code. If you are new, we will create your account automatically."
+
 [node name="SendCodeButton" type="Button" parent="EmailContainer"]
 layout_mode = 2
-text = "Send Code"
+text = "Send code →"
 
 [node name="CodeContainer" type="VBoxContainer" parent="."]
 visible = false
 layout_mode = 2
+theme_override_constants/separation = 8
 
-[node name="Label" type="Label" parent="CodeContainer"]
+[node name="CodePromptLabel" type="Label" parent="CodeContainer"]
 layout_mode = 2
-text = "Check your email for the code"
+text = "Please enter the code we sent to your@email.com."
 
-[node name="CodeInput" type="LineEdit" parent="CodeContainer"]
+[node name="CodeInput" parent="CodeContainer" instance=ExtResource("4_submit_line_edit")]
 layout_mode = 2
 placeholder_text = "Enter code"
 
 [node name="VerifyButton" type="Button" parent="CodeContainer"]
 layout_mode = 2
-text = "Verify"
+text = "Submit code →"
 
-[node name="BackButton" type="Button" parent="CodeContainer"]
+[node name="BackLink" type="LinkButton" parent="CodeContainer"]
 layout_mode = 2
-text = "Use different email"
+text = "← Use different email"
+
+[node name="AgreementWrapper" type="MarginContainer" parent="."]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+
+[node name="AgreementContainer" type="VBoxContainer" parent="AgreementWrapper"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="IntroLabel" type="Label" parent="AgreementWrapper/AgreementContainer"]
+layout_mode = 2
+text = "Please read and accept the following agreements before continuing."
+
+[node name="CheckBox" type="CheckBox" parent="AgreementWrapper/AgreementContainer"]
+layout_mode = 2
+text = "I have read and agree to the following:"
+
+[node name="LinksList" type="VBoxContainer" parent="AgreementWrapper/AgreementContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TermsLink" type="LinkButton" parent="AgreementWrapper/AgreementContainer/LinksList"]
+layout_mode = 2
+text = "• Terms and Conditions"
+
+[node name="PrivacyLink" type="LinkButton" parent="AgreementWrapper/AgreementContainer/LinksList"]
+layout_mode = 2
+text = "• Privacy Policy"
+
+[node name="DpaLink" type="LinkButton" parent="AgreementWrapper/AgreementContainer/LinksList"]
+layout_mode = 2
+text = "• Data Processing Agreement"
+
+[node name="FooterHBox" type="HBoxContainer" parent="AgreementWrapper/AgreementContainer"]
+layout_mode = 2
+
+[node name="FooterLabel" type="Label" parent="AgreementWrapper/AgreementContainer/FooterHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Your data is encrypted, stored in the EU, and handled in accordance with UK and EU GDPR. "
+
+[node name="LearnMoreLink" type="LinkButton" parent="AgreementWrapper/AgreementContainer/FooterHBox"]
+layout_mode = 2
+text = "Learn more"
+
+[node name="ContinueButton" type="Button" parent="AgreementWrapper/AgreementContainer"]
+layout_mode = 2
+text = "Continue"
 
 [node name="AuthenticatedContainer" type="VBoxContainer" parent="."]
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="HeaderContainer" type="VBoxContainer" parent="AuthenticatedContainer"]
+[node name="HeaderContainer" type="HBoxContainer" parent="AuthenticatedContainer"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 8
 
 [node name="WelcomeLabel" type="Label" parent="AuthenticatedContainer/HeaderContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
 text = "ShipThis - Ready!"
+
+[node name="LinksContainer" type="HBoxContainer" parent="AuthenticatedContainer/HeaderContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DocsLink" type="LinkButton" parent="AuthenticatedContainer/HeaderContainer/LinksContainer"]
+layout_mode = 2
+underline = 0
+text = "Docs"
+
+[node name="DashboardLink" type="LinkButton" parent="AuthenticatedContainer/HeaderContainer/LinksContainer"]
+layout_mode = 2
+underline = 0
+text = "Dashboard"
+
+[node name="DiscordLink" type="LinkButton" parent="AuthenticatedContainer/HeaderContainer/LinksContainer"]
+layout_mode = 2
+underline = 0
+text = "Discord"
 
 [node name="StatusView" parent="AuthenticatedContainer" instance=ExtResource("3_status_view")]
 custom_minimum_size = Vector2(0, 200)

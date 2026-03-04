@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvu24tdvjq8cq"]
+
+[ext_resource type="Script" path="res://addons/shipthis/components/SubmitLineEdit.gd" id="1_script"]
+
+[node name="SubmitLineEdit" type="LineEdit"]
+layout_mode = 2
+script = ExtResource("1_script")
