@@ -56,9 +56,9 @@ var _agreement_user: SelfWithJWT = null
 
 func _ready() -> void:
 	send_code_button.pressed.connect(_on_send_code_pressed)
-	email_input.text_submitted.connect(_on_send_code_pressed)
+	email_input.submitted.connect(_on_send_code_pressed)
 	verify_button.pressed.connect(_on_verify_pressed)
-	code_input.text_submitted.connect(_on_verify_pressed)
+	code_input.submitted.connect(_on_verify_pressed)
 	back_link.pressed.connect(_on_back_pressed)
 	agreement_continue_button.pressed.connect(_on_agreement_continue_pressed)
 	terms_link.pressed.connect(_open_agreement_link.bind("https://shipth.is/terms"))
@@ -104,6 +104,9 @@ func _show_view(view: View, user: SelfWithJWT = null) -> void:
 	
 	if view == View.CODE:
 		code_prompt_label.text = "Please enter the code we sent to %s." % current_email
+		code_input.call_deferred("grab_focus")
+	elif view == View.EMAIL:
+		email_input.call_deferred("grab_focus")
 	elif view == View.AGREEMENT and user != null:
 		_agreement_user = user
 		agreement_check.button_pressed = false
@@ -149,7 +152,7 @@ func _set_loading(is_loading: bool) -> void:
 	agreement_check.disabled = is_loading
 
 
-func _on_send_code_pressed() -> void:
+func _on_send_code_pressed(_text: String = "") -> void:
 	var email: String = email_input.text.strip_edges()
 	
 	if email == "":
@@ -174,7 +177,7 @@ func _on_send_code_pressed() -> void:
 		_set_status("Failed to send code: %s" % response.error, true)
 
 
-func _on_verify_pressed() -> void:
+func _on_verify_pressed(_text: String = "") -> void:
 	var otp: String = code_input.text.strip_edges()
 	
 	if otp == "":

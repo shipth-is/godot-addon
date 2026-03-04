@@ -27,7 +27,7 @@ var project_id: String = ""
 
 func _ready() -> void:
 	invite_button.pressed.connect(_on_invite_pressed)
-	account_id_input.text_submitted.connect(_on_text_submitted)
+	account_id_input.submitted.connect(_on_text_submitted)
 	instructions_notice.meta_clicked.connect(_on_meta_clicked)
 
 
